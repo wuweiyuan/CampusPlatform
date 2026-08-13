@@ -1,0 +1,20 @@
+<h2>商品与订单的状态流转</h2>
+<p class="subtitle">一件商品只卖给一个买家。所有状态变更都在 Service 事务中校验。</p>
+
+<div class="mockup">
+  <div class="mockup-header">下单、取消、付款与完成</div>
+  <div class="mockup-body" style="display:grid;gap:14px;text-align:center">
+    <div style="display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap">
+      <div class="mock-content" style="border:2px solid #2563eb;border-radius:10px;padding:14px"><b>商品：在售</b><br><small>可浏览、收藏、下单</small></div>
+      <div style="font-size:25px">→ 创建订单</div>
+      <div class="mock-content" style="border:2px solid #f59e0b;border-radius:10px;padding:14px"><b>商品：已锁定</b><br><small>订单：待付款</small></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="border:1px solid #cbd5e1;border-radius:10px;padding:14px"><b>买家取消</b><br><span style="font-size:22px">↓</span><br>订单：已取消<br>商品恢复：在售</div>
+      <div style="border:1px solid #cbd5e1;border-radius:10px;padding:14px"><b>模拟付款</b><br><span style="font-size:22px">↓</span><br>订单：已付款<br>商品：已售出</div>
+    </div>
+    <div style="display:flex;justify-content:center;align-items:center;gap:12px"><div style="font-size:25px">已付款</div><div style="font-size:25px">→ 买家确认收货</div><div class="mock-content" style="border:2px solid #16a34a;border-radius:10px;padding:14px"><b>订单：已完成</b><br><small>不可再修改</small></div></div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:22px"><div class="mock-sidebar" style="padding:14px;border-radius:10px;background:#7f1d1d"><b>关键规则</b>：禁止买自己的商品；下架/已售商品不能下单；待付款才能取消或付款；已付款才能完成；每一步后端核验当前状态。</div></div>

@@ -1,0 +1,26 @@
+<h2>一个 Vue 项目，两种角色界面</h2>
+<p class="subtitle">登录后读取角色，动态加载菜单和路由；接口权限始终由后端把关。</p>
+
+<div class="mockup">
+  <div class="mockup-header">campus-trade-web</div>
+  <div class="mockup-body" style="display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;gap:14px">
+    <div style="border:2px solid #2563eb;border-radius:12px;padding:18px;min-height:260px">
+      <div class="label">学生菜单</div>
+      <h3>校园二手市场</h3>
+      <p>商品广场</p><p>发布商品</p><p>我的收藏</p><p>我的订单</p><p>个人中心</p>
+    </div>
+    <div style="font-size:26px;color:#64748b;text-align:center">←<br>登录<br>→</div>
+    <div style="border:2px solid #0f766e;border-radius:12px;padding:18px;min-height:260px">
+      <div class="label">管理员追加菜单</div>
+      <h3>平台管理台</h3>
+      <p>商品管理</p><p>分类管理</p><p>用户管理</p><p>订单管理</p><p>个人中心</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <div class="mock-content" style="border-radius:12px;text-align:center;padding:15px">
+    Vue Router 守卫：未登录 → 登录页；无角色 → 403 页<br>
+    Spring Boot：每个管理员接口再校验 <code>ROLE_ADMIN</code>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+<h2>第一期架构：单体 REST 后端</h2>
+<p class="subtitle">一个 Spring Boot 应用，覆盖分层、鉴权、缓存与容器部署。</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">CampusPlatform · 运行关系</div>
+    <div class="mockup-body" style="display:grid;gap:14px;text-align:center">
+      <div class="mock-nav">浏览器 / 前端测试工具（Apifox、Postman）</div>
+      <div style="font-size:23px;color:#64748b">↓ HTTP /api</div>
+      <div class="mock-nav" style="background:#0f766e">Nginx：反向代理</div>
+      <div style="font-size:23px;color:#64748b">↓</div>
+      <div class="mock-content" style="border:2px solid #2563eb;border-radius:12px;padding:18px">
+        <strong>Spring Boot</strong><br>
+        Controller → Service → Mapper<br>
+        JWT / 权限校验 / 业务状态校验
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="mock-sidebar" style="padding:14px;border-radius:12px">MySQL<br><small>用户、商品、收藏、订单</small></div>
+        <div class="mock-sidebar" style="padding:14px;border-radius:12px;background:#b91c1c">Redis<br><small>分类、热门商品、验证码 / Token 黑名单</small></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="monolith" onclick="toggleSelect(this)">
+    <div class="letter">✓</div><div class="content"><h3>推荐：单体后端</h3><p>先练完整业务闭环；Docker Compose 一键编排四个服务。</p></div>
+  </div>
+  <div class="option" data-choice="separated" onclick="toggleSelect(this)">
+    <div class="letter">B</div><div class="content"><h3>前后端分离</h3><p>另建 Vue 前端；体验更完整，但第一期学习负担更高。</p></div>
+  </div>
+  <div class="option" data-choice="microservices" onclick="toggleSelect(this)">
+    <div class="letter">C</div><div class="content"><h3>微服务</h3><p>服务拆分与网关；当前规模不需要，部署和排错成本明显上升。</p></div>
+  </div>
+</div>
