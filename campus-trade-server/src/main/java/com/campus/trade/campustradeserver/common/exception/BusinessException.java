@@ -8,7 +8,7 @@ public class BusinessException extends RuntimeException{
 
 
 
-    public BusinessException(String message, Integer code) {
+    public BusinessException(Integer code,String message) {
         super(message);
         this.code = code;
     }
