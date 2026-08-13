@@ -4,6 +4,20 @@
 
 在 Linux 上用 Docker Compose 启动 MySQL、Redis、Spring Boot、Nginx；Nginx 同时提供 Vue 页面和 `/api` 反向代理。
 
+## 本阶段文件地图
+
+```text
+campus-trade-server/Dockerfile            后端镜像构建文件
+campus-trade-web/Dockerfile               前端构建并交给 Nginx 的镜像文件
+deploy/docker-compose.yml                 四个服务的编排
+deploy/nginx.conf                         Vue 静态文件与 /api 反向代理
+deploy/.env.example                       部署变量名示例，可提交
+deploy/.env                               真实变量，必须忽略，不能提交
+deploy/README.md                          Linux 部署、更新和验收说明
+```
+
+先右键项目根目录新建 `deploy` 文件夹，再在其中逐个新建上面标明的文件；Dockerfile 分别放在后端和前端项目根目录，不放入 `src/`。
+
 ## 清单
 
 ### 1. 部署设计

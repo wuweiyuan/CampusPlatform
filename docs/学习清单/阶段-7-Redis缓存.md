@@ -4,6 +4,18 @@
 
 让 Redis 的使用可观察、可解释：邮箱验证码、退出黑名单、分类缓存、热门商品缓存。
 
+## 本阶段文件地图
+
+优先复用已有 `category/service/CategoryService.java` 和 `product/service/ProductService.java`，不要为了缓存重新建 Category/Product Controller。新增公共缓存代码可放：
+
+```text
+common/cache/CacheKeys.java              Redis 键名常量
+common/config/RedisConfig.java           JSON 序列化与 RedisTemplate 配置（如果需要）
+product/service/HotProductService.java   热门商品查询与缓存
+```
+
+文档文件：`docs/cache.md`。前端修改 `campus-trade-web/src/api/product.js` 并在 `src/views/market/ProductMarketView.vue` 增加热门商品区域。
+
 ## 清单
 
 - [ ] 创建 `docs/cache.md`，为每个键记录：键名、值结构、TTL、谁写、谁读、何时删除。

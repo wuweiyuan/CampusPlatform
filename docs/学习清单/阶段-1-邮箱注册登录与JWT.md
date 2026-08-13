@@ -4,6 +4,27 @@
 
 实现邮箱验证码注册、用户名密码登录、JWT 鉴权、获取当前用户、退出登录黑名单。完成后先用 Apifox/Postman 测试，不急着写页面。
 
+## 本阶段文件地图
+
+所有 Java 文件都在 `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/` 下面创建：
+
+```text
+auth/
+├── controller/AuthController.java       接收登录、注册、发送验证码、退出等 HTTP 请求
+├── service/AuthService.java             注册和登录业务
+├── service/EmailCodeService.java        生成、保存、校验、发送验证码
+├── mapper/SysUserMapper.java            用户表数据库访问
+├── entity/SysUser.java                  对应 sys_user 表
+├── dto/SendEmailCodeRequest.java        发送验证码请求
+├── dto/RegisterRequest.java              注册请求
+├── dto/LoginRequest.java                 登录请求
+├── dto/LoginResponse.java                登录成功响应
+├── security/JwtService.java              创建与解析 JWT
+└── security/JwtAuthenticationFilter.java 每次请求校验 JWT
+```
+
+SQL 迁移文件固定放在 `campus-trade-server/src/main/resources/db/migration/V1__create_sys_user.sql`。认证接口文档放在 `docs/api/phase-1.md`。包的创建方式都是：右键后端根包 → `New → Package` → 输入如 `auth.dto` → 在包内 `New → Java Class`。
+
 ## 1. 准备
 
 - [ ] 本地创建 MySQL 数据库 `campus_trade`，字符集选 UTF-8。
@@ -33,7 +54,7 @@
 
 ## 4. 后端实现
 
-- [ ] 在 `auth` 模块中创建：DTO、`SysUser` 实体、Mapper、Service、Controller、JWT 工具/服务、JWT 过滤器、邮箱验证码服务。
+- [ ] 按上方“本阶段文件地图”逐个创建 `auth` 子包和类；先从 DTO、实体、Mapper 开始，再创建 Service、JWT 和 Controller。不要把所有类都堆在 `auth` 根包。
 - [ ] 验证码使用安全随机数生成 6 位数字；不得记录密码、JWT 密钥。
 - [ ] Redis 键：`auth:email:code:{email}`，5 分钟；`auth:email:cooldown:{email}`，60 秒。
 - [ ] `MAIL_MODE=log` 时只向后端日志输出收件邮箱和验证码；`MAIL_MODE=smtp` 时按环境变量调用 SMTP。不要把 SMTP 账号密码提交到 Git。
@@ -43,9 +64,9 @@
 - [ ] `/me` 的用户 ID 从已认证用户中读取，不能从前端参数读取。
 - [ ] 退出时把 `jti` 写入 `auth:token:blacklist:{jti}`，过期时间等于 JWT 剩余时间；之后旧 Token 请求返回 401。
 
-## 5. 测试与验收
+## 5. 用 Postman 手动验收
 
-- [ ] 测试：发送成功、60 秒限频、正确码注册、错误/过期验证码、用户名/邮箱重复、密码不是明文。
-- [ ] 测试：正确登录、错误密码、禁用账号、未带 Token 的 `/me`、退出后用旧 Token 访问 `/me`。
-- [ ] 在 Apifox 保存以上请求；正常、未登录、参数错误都要有用例。
-- [ ] 运行完整后端测试并提交 Git。
+- [ ] 在 Postman 创建集合“校园二手交易平台”，新建“认证”文件夹；保存：发送成功、60 秒限频、正确码注册、错误/过期验证码、用户名/邮箱重复。
+- [ ] 再保存：正确登录、错误密码、禁用账号、未带 Token 的 `/me`、退出后用旧 Token 访问 `/me`。
+- [ ] 用 Postman 的环境变量保存 `baseUrl` 和登录得到的 `token`；受保护请求的 Header 填 `Authorization: Bearer {{token}}`。
+- [ ] 每条请求检查状态码、`code`、`message`、`data` 是否符合接口文档；全部手动通过后提交 Git。
