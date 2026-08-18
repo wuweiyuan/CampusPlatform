@@ -23,7 +23,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-
+    private final TokenBlacklistService tokenBlacklistService;
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -43,6 +43,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             Claims claims = jwtService.parseClaims(token);
+
+            String jti = claims.getId();
+            if(jti == null || tokenBlacklistService.isBlacklisted(jti)){
+                SecurityContextHolder.clearContext();
+                filterChain.doFilter(request,response);
+                return;
+            }
 
             Number userId = claims.get("userId", Number.class);
             String username = claims.getSubject();
