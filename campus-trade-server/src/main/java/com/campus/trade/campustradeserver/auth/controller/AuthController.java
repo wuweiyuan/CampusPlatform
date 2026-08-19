@@ -44,4 +44,11 @@ public class AuthController {
         UserInfoResponse user = authService.getCurrentUser(currentUser.id());
         return new ApiResponse<>(0,"操作成功",user);
     }
+
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@RequestHeader("Authorization") String authorization){
+        String token = authorization.substring(7);
+        authService.logout(token);
+        return new ApiResponse<>(0,"退出登录",null);
+    }
 }

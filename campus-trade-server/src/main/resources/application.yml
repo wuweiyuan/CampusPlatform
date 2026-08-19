@@ -1,14 +1,10 @@
 
 
 spring:
+  config:
+    import: optional:classpath:application-local.yml
   application:
     name: campus-trade-server
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/campus_trade?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: root
-    password: admin
-    driver-class-name: com.mysql.cj.jdbc.Driver
 
   data:
     redis:
@@ -21,6 +17,5 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:KdtcDigySMk6Pua+JRCzy/EqyIPX8Mep9BeKIPs1He4=}
     expire-seconds: ${JWT_EXPIRE_SECONDS:7200}
 

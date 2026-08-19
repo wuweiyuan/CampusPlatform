@@ -1,6 +1,7 @@
 package com.campus.trade.campustradeserver.common.config;
 
 import com.campus.trade.campustradeserver.auth.security.JwtAuthenticationFilter;
+import com.campus.trade.campustradeserver.auth.security.RestAccessDeniedHandler;
 import com.campus.trade.campustradeserver.auth.security.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +16,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter,
-            RestAuthenticationEntryPoint restAuthenticationEntryPoint
+            RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+            RestAccessDeniedHandler restAccessDeniedHandler
     )throws Exception{
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
@@ -27,9 +29,11 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/register"
                         ).permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 ).exceptionHandling(exception -> exception
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        .accessDeniedHandler(restAccessDeniedHandler)
                 );
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

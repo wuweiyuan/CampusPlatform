@@ -6,9 +6,11 @@ import com.campus.trade.campustradeserver.auth.dto.LoginResponse;
 import com.campus.trade.campustradeserver.auth.dto.RegisterRequest;
 import com.campus.trade.campustradeserver.auth.dto.UserInfoResponse;
 import com.campus.trade.campustradeserver.auth.security.JwtService;
+import com.campus.trade.campustradeserver.auth.security.TokenBlacklistService;
 import com.campus.trade.campustradeserver.common.exception.BusinessException;
 import com.campus.trade.campustradeserver.user.entity.SysUser;
 import com.campus.trade.campustradeserver.user.mapper.SysUserMapper;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class AuthService {
     private final SysUserMapper sysUserMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
     public void register(RegisterRequest registerRequest) {
@@ -91,5 +94,13 @@ public class AuthService {
         response.setRole(user.getRole());
         response.setId(user.getId());
         return response;
+    }
+
+    public void logout(String token){
+        Claims claims = jwtService.parseClaims(token);
+
+        String jti = claims.getId();
+        long remainingSeconds = (claims.getExpiration().getTime() - System.currentTimeMillis() + 999) / 1000;
+        tokenBlacklistService.addToBlacklist(jti,remainingSeconds);
     }
 }
