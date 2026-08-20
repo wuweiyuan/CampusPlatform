@@ -5,6 +5,7 @@ import com.campus.trade.campustradeserver.auth.security.RestAccessDeniedHandler;
 import com.campus.trade.campustradeserver.auth.security.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -24,6 +25,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET,"/api/categories")
+                        .permitAll()
                         .requestMatchers(
                                 "/api/auth/email-code",
                                 "/api/auth/login",
