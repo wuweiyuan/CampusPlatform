@@ -2,6 +2,7 @@ package com.campus.trade.campustradeserver.category.service;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.campus.trade.campustradeserver.category.dto.CategoryCreateRequest;
+import com.campus.trade.campustradeserver.category.dto.CategoryStatusUpdateRequest;
 import com.campus.trade.campustradeserver.category.dto.CategoryUpdateRequest;
 import com.campus.trade.campustradeserver.category.entity.Category;
 import com.campus.trade.campustradeserver.category.mapper.CategoryMapper;
@@ -71,6 +72,18 @@ public class CategoryService {
             category.setSort(request.getSort());
         }
 
+        categoryMapper.updateById(category);
+        return categoryMapper.selectById(id);
+
+    }
+
+    public Category updateCategoryStatus(Long id , CategoryStatusUpdateRequest request){
+        Category category = categoryMapper.selectById(id);
+        if(category == null){
+            throw new BusinessException(2002,"分类不存在");
+        }
+
+        category.setStatus(request.getStatus().name());
         categoryMapper.updateById(category);
         return categoryMapper.selectById(id);
 

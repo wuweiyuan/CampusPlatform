@@ -1,6 +1,7 @@
 package com.campus.trade.campustradeserver.category.controller;
 
 import com.campus.trade.campustradeserver.category.dto.CategoryCreateRequest;
+import com.campus.trade.campustradeserver.category.dto.CategoryStatusUpdateRequest;
 import com.campus.trade.campustradeserver.category.dto.CategoryUpdateRequest;
 import com.campus.trade.campustradeserver.category.entity.Category;
 import com.campus.trade.campustradeserver.category.service.CategoryService;
@@ -47,5 +48,12 @@ public class AdminCategoryController {
     public ApiResponse<AdminCategoryResponse> updateCategory(@PathVariable Long id , @Valid @RequestBody CategoryUpdateRequest request){
         Category category = categoryService.updateCategory(id,request);
         return ApiResponse.success(toAdminCategoryResponse(category));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ApiResponse<AdminCategoryResponse> updateCategoryStatus(@PathVariable Long id , @Valid @RequestBody CategoryStatusUpdateRequest request){
+        Category category = categoryService.updateCategoryStatus(id,request);
+        return ApiResponse.success(toAdminCategoryResponse(category));
+
     }
 }
