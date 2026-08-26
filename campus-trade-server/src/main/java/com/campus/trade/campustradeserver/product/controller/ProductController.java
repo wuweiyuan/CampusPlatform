@@ -5,7 +5,9 @@ import com.campus.trade.campustradeserver.category.entity.Category;
 import com.campus.trade.campustradeserver.category.mapper.CategoryMapper;
 
 import com.campus.trade.campustradeserver.common.api.ApiResponse;
+import com.campus.trade.campustradeserver.common.exception.BusinessException;
 import com.campus.trade.campustradeserver.product.dto.CreateProductRequest;
+import com.campus.trade.campustradeserver.product.dto.UpdateProductRequest;
 import com.campus.trade.campustradeserver.product.entity.Product;
 import com.campus.trade.campustradeserver.product.enums.ProductStatus;
 import com.campus.trade.campustradeserver.product.service.ProductService;
@@ -13,10 +15,7 @@ import com.campus.trade.campustradeserver.product.vo.ProductDetailResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/products")
 @RestController
@@ -35,6 +34,34 @@ public class ProductController {
         return ApiResponse.success(toProductDetailResponse(product, category.getName(), currentUser.username()));
     }
 
+    @PutMapping("/{id}")
+    public ApiResponse<ProductDetailResponse> updateProduct(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateProductRequest request,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+            ){
+        validateProductId(id);
+        Product product = productService.updateProduct(id,currentUser.id(),request);
+        Category category = categoryMapper.selectById(product.getCategoryId());
+
+        return ApiResponse.success(toProductDetailResponse(product,category.getName(), currentUser.username()));
+    }
+
+    @PostMapping("/{id}/off-shelf")
+    public ApiResponse<Void> offShelfProduct(
+            @PathVariable long id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ){
+        validateProductId(id);
+        productService.offShelfProduct(id, currentUser.id());
+        return new ApiResponse<>(0,"下架成功",null);
+    }
+
+    private void validateProductId(Long id){
+        if(id == null || id <= 0){
+            throw new BusinessException(400,"商品ID必须为正整数");
+        }
+    }
     private ProductDetailResponse toProductDetailResponse(
             Product product,
             String categoryName,

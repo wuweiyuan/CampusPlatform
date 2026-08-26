@@ -128,6 +128,12 @@
             <artifactId>imageio-webp</artifactId>
             <version>3.12.0</version>
         </dependency>
+        <!--分页-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+            <version>3.5.14</version>
+        </dependency>
 
     </dependencies>
 
