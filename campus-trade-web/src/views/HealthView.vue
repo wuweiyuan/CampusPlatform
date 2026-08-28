@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import http from '../api/http'
+import { onMounted, ref } from "vue";
+import http from "../api/http";
 
-const status = ref('加载中…')
-const isAvailable = ref<boolean | null>(null)
+const status = ref("加载中…");
+const isAvailable = ref<boolean | null>(null);
 
 interface HealthResponse {
-  code: number
-  message: string
+  code: number;
+  message: string;
   data: {
-    status: string
-  }
+    status: string;
+  };
 }
 
 onMounted(async () => {
   try {
-    const { data } = await http.get<HealthResponse>('/health')
-    status.value = data.data.status
-    isAvailable.value = true
+    const { data } = await http.get<HealthResponse>("/health");
+    status.value = data.data.status;
+    isAvailable.value = true;
   } catch {
-    isAvailable.value = false
+    isAvailable.value = false;
   }
-})
+});
 </script>
 
 <template>

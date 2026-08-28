@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "format": "prettier --write src vite.config.ts package.json",
+    "test": "vitest run",
     "type-check": "vue-tsc --noEmit",
     "build": "npm run type-check && vite build",
     "preview": "vite preview"
@@ -18,8 +20,12 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/test-utils": "^2.5.0",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.6",
     "typescript": "^5.9.3",
     "vite": "^8.2.0",
+    "vitest": "^4.1.11",
     "vue-tsc": "^3.3.9"
   }
 }

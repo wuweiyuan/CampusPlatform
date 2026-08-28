@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ title: string; description: string }>()
+defineProps<{ title: string; description: string }>();
 </script>
 
 <template>
@@ -10,7 +10,14 @@ defineProps<{ title: string; description: string }>()
 </template>
 
 <style scoped>
-.page-card { max-width: 760px; }
-h1 { margin-top: 0; font-size: 24px; }
-p { color: #6b7280; }
+.page-card {
+  max-width: 760px;
+}
+h1 {
+  margin-top: 0;
+  font-size: 24px;
+}
+p {
+  color: #6b7280;
+}
 </style>
