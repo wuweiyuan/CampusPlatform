@@ -11,5 +11,6 @@ describe("product route access", () => {
     expect(router.resolve("/products/new").meta.requiresAuth).toBe(true);
     expect(router.resolve("/products/1/edit").meta.requiresAuth).toBe(true);
     expect(router.resolve("/my-products").meta.requiresAuth).toBe(true);
+    expect(router.resolve("/favorites").meta.requiresAuth).toBe(true);
   });
 });

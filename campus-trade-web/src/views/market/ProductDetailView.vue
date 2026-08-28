@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { ElMessage } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
+import { addFavorite, removeFavorite } from "../../api/favorite";
 import { getErrorMessage } from "../../api/http";
 import { getProduct, type ProductDetail } from "../../api/product";
 import { useAuthStore } from "../../stores/auth";
@@ -10,7 +12,14 @@ const authStore = useAuthStore();
 const product = ref<ProductDetail>();
 const loading = ref(true);
 const errorMessage = ref("");
+const favoriteLoading = ref(false);
 const isOwner = computed(() => product.value?.sellerId === authStore.user?.id);
+const canToggleFavorite = computed(
+  () =>
+    authStore.isAuthenticated &&
+    product.value?.status === "ON_SALE" &&
+    Boolean(product.value),
+);
 async function load() {
   loading.value = true;
   errorMessage.value = "";
@@ -20,6 +29,27 @@ async function load() {
     errorMessage.value = getErrorMessage(error, "商品不存在或已下架");
   } finally {
     loading.value = false;
+  }
+}
+async function toggleFavorite() {
+  if (!product.value) return;
+
+  const wasFavorited = product.value.favorited;
+  favoriteLoading.value = true;
+  try {
+    if (wasFavorited) {
+      await removeFavorite(product.value.id);
+    } else {
+      await addFavorite(product.value.id);
+    }
+    product.value.favorited = !wasFavorited;
+    ElMessage.success(wasFavorited ? "已取消收藏" : "收藏成功");
+  } catch (error) {
+    ElMessage.error(
+      getErrorMessage(error, wasFavorited ? "取消收藏失败" : "收藏失败"),
+    );
+  } finally {
+    favoriteLoading.value = false;
   }
 }
 onMounted(load);
@@ -68,6 +98,16 @@ onMounted(load);
             @click="router.push(`/products/${product.id}/edit`)"
             >编辑商品</el-button
           >
+          <el-button
+            v-if="canToggleFavorite"
+            :type="product.favorited ? 'info' : 'primary'"
+            :plain="product.favorited"
+            :loading="favoriteLoading"
+            :disabled="favoriteLoading"
+            @click="toggleFavorite"
+          >
+            {{ product.favorited ? "取消收藏" : "收藏" }}
+          </el-button>
         </div>
       </article></template
     >

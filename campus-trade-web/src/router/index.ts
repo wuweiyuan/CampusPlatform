@@ -50,8 +50,7 @@ const router = createRouter({
         {
           path: "favorites",
           name: "favorites",
-          component: () => import("../views/ComingSoonView.vue"),
-          props: { title: "我的收藏", description: "收藏功能将在阶段四完成。" },
+          component: () => import("../views/favorite/FavoritesView.vue"),
           meta: { requiresAuth: true },
         },
         {

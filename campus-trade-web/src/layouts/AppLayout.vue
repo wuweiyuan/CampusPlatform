@@ -30,6 +30,7 @@ async function handleLogout() {
         ><template v-if="authenticated"
           ><RouterLink to="/products/new">发布商品</RouterLink
           ><RouterLink to="/my-products">我的发布</RouterLink
+          ><RouterLink to="/favorites">我的收藏</RouterLink
           ><RouterLink to="/profile">个人中心</RouterLink></template
         >
       </nav>

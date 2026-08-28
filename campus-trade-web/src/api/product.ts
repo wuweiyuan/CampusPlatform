@@ -22,6 +22,7 @@ export interface ProductCard {
   sellerName: string;
   viewCount: number;
   createdAt: string;
+  favorited: boolean;
 }
 
 export interface ProductDetail extends ProductCard {

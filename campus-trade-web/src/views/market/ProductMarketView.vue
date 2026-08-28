@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 import { getCategories, type Category } from "../../api/category";
+import { addFavorite, removeFavorite } from "../../api/favorite";
+import { getErrorMessage } from "../../api/http";
 import {
   getProducts,
   type PageResponse,
   type ProductCard,
 } from "../../api/product";
-import { getErrorMessage } from "../../api/http";
+import { useAuthStore } from "../../stores/auth";
 
 const router = useRouter();
+const authStore = useAuthStore();
 const categories = ref<Category[]>([]);
 const records = ref<ProductCard[]>([]);
 const keyword = ref("");
@@ -19,6 +23,7 @@ const pageSize = ref(10);
 const total = ref(0);
 const loading = ref(false);
 const errorMessage = ref("");
+const operatingId = ref<number>();
 const hasFilters = computed(() => keyword.value.trim() || categoryId.value);
 
 function placeholderClass(name: string) {
@@ -72,6 +77,25 @@ function reset() {
 function changePageSize(size: number) {
   pageSize.value = size;
   loadProducts(1);
+}
+async function toggleFavorite(item: ProductCard) {
+  const wasFavorited = item.favorited;
+  operatingId.value = item.id;
+  try {
+    if (wasFavorited) {
+      await removeFavorite(item.id);
+    } else {
+      await addFavorite(item.id);
+    }
+    item.favorited = !wasFavorited;
+    ElMessage.success(wasFavorited ? "已取消收藏" : "收藏成功");
+  } catch (error) {
+    ElMessage.error(
+      getErrorMessage(error, wasFavorited ? "取消收藏失败" : "收藏失败"),
+    );
+  } finally {
+    operatingId.value = undefined;
+  }
 }
 onMounted(() => {
   loadCategories();
@@ -167,6 +191,18 @@ onMounted(() => {
               {{ item.sellerName }} · {{ formatDate(item.createdAt) }} ·
               {{ item.viewCount }} 浏览
             </p>
+            <el-button
+              v-if="authStore.isAuthenticated && item.status === 'ON_SALE'"
+              class="favorite-button"
+              size="small"
+              :type="item.favorited ? 'info' : 'primary'"
+              :plain="item.favorited"
+              :loading="operatingId === item.id"
+              :disabled="operatingId === item.id"
+              @click.stop="toggleFavorite(item)"
+            >
+              {{ item.favorited ? "取消收藏" : "收藏" }}
+            </el-button>
           </div>
         </article>
       </div>
