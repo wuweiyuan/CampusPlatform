@@ -383,7 +383,16 @@ data:image/png;base64,iVBORw0KGgo...
 - 是否登录：是
 - 作用：分页查看当前登录用户发布的全部商品，包括已下架商品。
 
-查询参数仅为通用分页参数：`page`、`pageSize`。后端从 JWT 取得卖家 ID，客户端不能传入任意 `sellerId` 查询其他用户商品。
+查询参数：
+
+| 参数 | 必填 | 规则 |
+| --- | --- | --- |
+| `page` | 否 | 从 `1` 开始，默认 `1` |
+| `pageSize` | 否 | `1` 到 `50`，默认 `12` |
+| `keyword` | 否 | 去除首尾空格后最多 60 字符；搜索当前用户商品的标题和描述；空字符串等价于未传 |
+| `status` | 否 | `ON_SALE`、`LOCKED`、`SOLD`、`OFF_SHELF` 之一；未传时包含当前用户的全部状态商品 |
+
+后端从 JWT 取得卖家 ID，客户端不能传入任意 `sellerId` 查询其他用户商品。
 
 成功响应的 `data` 为分页对象，`records` 元素为 `ProductPageResponse`。默认按 `createdAt` 倒序、`id` 倒序排列。
 

@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campus.trade.campustradeserver.product.entity.Product;
+import com.campus.trade.campustradeserver.product.vo.ProductDetailResponse;
 import com.campus.trade.campustradeserver.product.vo.ProductPageResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface ProductMapper extends BaseMapper<Product> {
@@ -46,4 +48,70 @@ public interface ProductMapper extends BaseMapper<Product> {
             @Param("categoryId") Long categoryId,
             @Param("keyword") String keyword
     );
+
+    @Update("""
+        UPDATE product SET view_count = view_count + 1
+        WHERE id = #{id}
+        AND status = 'ON_SALE'
+    """)
+    int incrementViewCountIfOnSale(@Param("id") Long id);
+
+    @Select("""
+        select  
+            p.id,
+                          p.title,
+                          p.description,
+                          p.price,
+                          p.image_base64 AS imageBase64,
+                          p.status,
+                          p.category_id AS categoryId,
+                          c.name AS categoryName,
+                          p.seller_id AS sellerId,
+                          u.username AS sellerName,
+                          p.view_count AS viewCount,
+                          p.created_at AS createdAt,
+                          p.updated_at AS updatedAt
+        from product p 
+        INNER JOIN category c ON c.id = p.category_id
+        INNER JOIN sys_user u ON u.id = p.seller_id
+        WHERE p.id = #{id}
+        AND p.status = 'ON_SALE'
+    """)
+    ProductDetailResponse selectOnSaleDetailById(@Param("id") Long id);
+
+    @Select("""
+          <script>
+          SELECT
+              p.id,
+              p.title,
+              p.price,
+              p.image_base64 AS imageBase64,
+              p.status,
+              p.category_id AS categoryId,
+              c.name AS categoryName,
+              p.seller_id AS sellerId,
+              u.username AS sellerName,
+              p.view_count AS viewCount,
+              p.created_at AS createdAt
+          FROM product p
+          INNER JOIN category c ON c.id = p.category_id
+          INNER JOIN sys_user u ON u.id = p.seller_id
+          WHERE p.seller_id = #{sellerId}
+          <if test="keyword != null and keyword != ''">
+              AND (
+                  p.title LIKE CONCAT('%', #{keyword}, '%')
+                  OR p.description LIKE CONCAT('%', #{keyword}, '%')
+              )
+          </if>
+          <if test="status != null and status != ''">
+              AND p.status = #{status}
+          </if>
+          ORDER BY p.created_at DESC, p.id DESC
+          </script>
+          """)
+    IPage<ProductPageResponse> selectMyProductPage(
+            Page<ProductPageResponse> page,
+            @Param("sellerId") Long sellerId,
+            @Param("keyword") String keyword,
+            @Param("status") String status);
 }

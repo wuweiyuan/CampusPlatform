@@ -5,13 +5,17 @@ import com.campus.trade.campustradeserver.category.entity.Category;
 import com.campus.trade.campustradeserver.category.mapper.CategoryMapper;
 
 import com.campus.trade.campustradeserver.common.api.ApiResponse;
+import com.campus.trade.campustradeserver.common.api.PageResponse;
 import com.campus.trade.campustradeserver.common.exception.BusinessException;
 import com.campus.trade.campustradeserver.product.dto.CreateProductRequest;
+import com.campus.trade.campustradeserver.product.dto.MyProductQuery;
+import com.campus.trade.campustradeserver.product.dto.ProductQuery;
 import com.campus.trade.campustradeserver.product.dto.UpdateProductRequest;
 import com.campus.trade.campustradeserver.product.entity.Product;
 import com.campus.trade.campustradeserver.product.enums.ProductStatus;
 import com.campus.trade.campustradeserver.product.service.ProductService;
 import com.campus.trade.campustradeserver.product.vo.ProductDetailResponse;
+import com.campus.trade.campustradeserver.product.vo.ProductPageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,6 +38,28 @@ public class ProductController {
         return ApiResponse.success(toProductDetailResponse(product, category.getName(), currentUser.username()));
     }
 
+    @GetMapping
+    public ApiResponse<PageResponse<ProductPageResponse>> listOnSaleProducts(@Valid ProductQuery query){
+        PageResponse<ProductPageResponse> pageResponse = productService.listOnSaleProducts(query);
+        return ApiResponse.success(pageResponse);
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<ProductDetailResponse> getOnSaleProductDetail(@PathVariable Long id){
+        validateProductId(id);
+
+        ProductDetailResponse response =  productService.getOnSaleProductDetail(id);
+        return ApiResponse.success(response);
+    }
+
+    @GetMapping("/mine")
+    public ApiResponse<PageResponse<ProductPageResponse>> listMyProducts(
+            @Valid MyProductQuery query,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+            ){
+        PageResponse<ProductPageResponse> response = productService.listMyProducts(currentUser.id(), query);
+        return ApiResponse.success(response);
+    }
     @PutMapping("/{id}")
     public ApiResponse<ProductDetailResponse> updateProduct(
             @PathVariable Long id,
