@@ -25,4 +25,6 @@ public class ProductDetailResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private boolean favorited;
+
 }

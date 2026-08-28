@@ -4,6 +4,7 @@ import com.campus.trade.campustradeserver.auth.security.AuthenticatedUser;
 import com.campus.trade.campustradeserver.category.entity.Category;
 import com.campus.trade.campustradeserver.category.mapper.CategoryMapper;
 
+import com.campus.trade.campustradeserver.product.vo.ProductPageResponse;
 import com.campus.trade.campustradeserver.common.api.ApiResponse;
 import com.campus.trade.campustradeserver.common.api.PageResponse;
 import com.campus.trade.campustradeserver.common.exception.BusinessException;
@@ -15,7 +16,6 @@ import com.campus.trade.campustradeserver.product.entity.Product;
 import com.campus.trade.campustradeserver.product.enums.ProductStatus;
 import com.campus.trade.campustradeserver.product.service.ProductService;
 import com.campus.trade.campustradeserver.product.vo.ProductDetailResponse;
-import com.campus.trade.campustradeserver.product.vo.ProductPageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,16 +39,17 @@ public class ProductController {
     }
 
     @GetMapping
-    public ApiResponse<PageResponse<ProductPageResponse>> listOnSaleProducts(@Valid ProductQuery query){
-        PageResponse<ProductPageResponse> pageResponse = productService.listOnSaleProducts(query);
+    public ApiResponse<PageResponse<ProductPageResponse>> listOnSaleProducts(@Valid ProductQuery query,@AuthenticationPrincipal AuthenticatedUser currentUser){
+        Long currentUserId = currentUser == null ? null : currentUser.id();
+        PageResponse<ProductPageResponse> pageResponse = productService.listOnSaleProducts(query, currentUserId);
         return ApiResponse.success(pageResponse);
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<ProductDetailResponse> getOnSaleProductDetail(@PathVariable Long id){
+    public ApiResponse<ProductDetailResponse> getOnSaleProductDetail(@PathVariable Long id,@AuthenticationPrincipal AuthenticatedUser currentUser){
         validateProductId(id);
-
-        ProductDetailResponse response =  productService.getOnSaleProductDetail(id);
+        Long currentUserId = currentUser == null ? null : currentUser.id();
+        ProductDetailResponse response =  productService.getOnSaleProductDetail(id, currentUserId);
         return ApiResponse.success(response);
     }
 
@@ -57,7 +58,7 @@ public class ProductController {
             @Valid MyProductQuery query,
             @AuthenticationPrincipal AuthenticatedUser currentUser
             ){
-        PageResponse<ProductPageResponse> response = productService.listMyProducts(currentUser.id(), query);
+        PageResponse<ProductPageResponse> response = productService.listMyProducts(currentUser.id(), query, currentUser.id());
         return ApiResponse.success(response);
     }
     @PutMapping("/{id}")

@@ -26,7 +26,13 @@ public interface ProductMapper extends BaseMapper<Product> {
                   p.seller_id AS sellerId,
                   u.username AS sellerName,
                   p.view_count AS viewCount,
-                  p.created_at AS createdAt
+                  p.created_at AS createdAt,
+                  EXISTS (
+                        SELECT 1
+                        FROM favorite f
+                        WHERE f.user_id = #{currentUserId}
+                          AND f.product_id = p.id
+                    ) AS favorited
               FROM product p
               INNER JOIN category c ON c.id = p.category_id
                         INNER JOIN sys_user u ON u.id = p.seller_id
@@ -46,7 +52,8 @@ public interface ProductMapper extends BaseMapper<Product> {
     IPage<ProductPageResponse> selectOnSalePage(
             Page<ProductPageResponse> page,
             @Param("categoryId") Long categoryId,
-            @Param("keyword") String keyword
+            @Param("keyword") String keyword,
+            @Param("currentUserId") Long currentUserId
     );
 
     @Update("""
@@ -70,14 +77,21 @@ public interface ProductMapper extends BaseMapper<Product> {
                           u.username AS sellerName,
                           p.view_count AS viewCount,
                           p.created_at AS createdAt,
-                          p.updated_at AS updatedAt
+                          p.updated_at AS updatedAt,
+                          EXISTS (
+                                SELECT 1
+                                FROM favorite f
+                                WHERE f.user_id = #{currentUserId}
+                                  AND f.product_id = p.id
+                            ) AS favorited
+                          
         from product p 
         INNER JOIN category c ON c.id = p.category_id
         INNER JOIN sys_user u ON u.id = p.seller_id
         WHERE p.id = #{id}
         AND p.status = 'ON_SALE'
     """)
-    ProductDetailResponse selectOnSaleDetailById(@Param("id") Long id);
+    ProductDetailResponse selectOnSaleDetailById(@Param("id") Long id,@Param("currentUserId") Long currentUserId);
 
     @Select("""
           <script>
@@ -92,7 +106,13 @@ public interface ProductMapper extends BaseMapper<Product> {
               p.seller_id AS sellerId,
               u.username AS sellerName,
               p.view_count AS viewCount,
-              p.created_at AS createdAt
+              p.created_at AS createdAt,
+              EXISTS (
+                    SELECT 1
+                    FROM favorite f
+                    WHERE f.user_id = #{currentUserId}
+                      AND f.product_id = p.id
+                ) AS favorited
           FROM product p
           INNER JOIN category c ON c.id = p.category_id
           INNER JOIN sys_user u ON u.id = p.seller_id
@@ -113,5 +133,7 @@ public interface ProductMapper extends BaseMapper<Product> {
             Page<ProductPageResponse> page,
             @Param("sellerId") Long sellerId,
             @Param("keyword") String keyword,
-            @Param("status") String status);
+            @Param("status") String status,
+            @Param("currentUserId") Long currentUserId
+    );
 }

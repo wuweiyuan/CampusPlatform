@@ -22,4 +22,6 @@ public class ProductPageResponse {
 
     private Long viewCount;
     private LocalDateTime createdAt;
+
+    private boolean favorited;
 }

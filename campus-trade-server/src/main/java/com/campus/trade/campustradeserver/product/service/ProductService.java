@@ -95,7 +95,8 @@ public class ProductService {
     }
 
     public PageResponse<ProductPageResponse> listOnSaleProducts(
-            ProductQuery query
+            ProductQuery query,
+            Long currentUserId
     ){
         String keyword = query.getKeyword();
         if(keyword != null){
@@ -109,7 +110,7 @@ public class ProductService {
                 query.getPage(),
                 query.getPageSize()
         );
-        IPage<ProductPageResponse> result = productMapper.selectOnSalePage(page, query.getCategoryId(), keyword);
+        IPage<ProductPageResponse> result = productMapper.selectOnSalePage(page, query.getCategoryId(), keyword,currentUserId);
 
         PageResponse<ProductPageResponse> response = new PageResponse<>();
         response.setPage(Math.toIntExact(result.getCurrent()));
@@ -120,13 +121,13 @@ public class ProductService {
 
     }
 
-    public ProductDetailResponse getOnSaleProductDetail(Long productId){
+    public ProductDetailResponse getOnSaleProductDetail(Long productId,Long currentUserId){
         int updatedRows = productMapper.incrementViewCountIfOnSale(productId);
         if(updatedRows == 0){
             throw new BusinessException(3001,"商品不存在或不可公开访问");
         }
 
-        ProductDetailResponse response = productMapper.selectOnSaleDetailById(productId);
+        ProductDetailResponse response = productMapper.selectOnSaleDetailById(productId,currentUserId);
         if(response == null){
             throw new BusinessException(3001,"商品不存在或不可公开访问");
         }
@@ -135,7 +136,8 @@ public class ProductService {
 
     public PageResponse<ProductPageResponse> listMyProducts(
             Long sellerId,
-            MyProductQuery query
+            MyProductQuery query,
+            Long currentUserId
     ){
         String keyword = query.getKeyword();
         if(keyword != null){
@@ -149,7 +151,7 @@ public class ProductService {
                 query.getPage(),
                 query.getPageSize()
         );
-        IPage<ProductPageResponse> result = productMapper.selectMyProductPage(page,sellerId,keyword, query.getStatus());
+        IPage<ProductPageResponse> result = productMapper.selectMyProductPage(page,sellerId,keyword, query.getStatus(),currentUserId);
         PageResponse<ProductPageResponse> response = new PageResponse<>();
         response.setPage(Math.toIntExact(result.getCurrent()));
         response.setPageSize(Math.toIntExact(result.getSize()));
