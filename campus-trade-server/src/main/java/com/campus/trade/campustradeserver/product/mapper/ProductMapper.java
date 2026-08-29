@@ -136,4 +136,17 @@ public interface ProductMapper extends BaseMapper<Product> {
             @Param("status") String status,
             @Param("currentUserId") Long currentUserId
     );
+
+    @Update("""
+          UPDATE product
+          SET status = #{targetStatus}
+          WHERE id = #{productId}
+            AND status = #{expectedStatus}
+      """)
+    int updateStatusIfCurrentStatus(
+            @Param("productId") Long productId,
+            @Param("expectedStatus") String expectedStatus,
+            @Param("targetStatus") String targetStatus
+    );
+
 }
