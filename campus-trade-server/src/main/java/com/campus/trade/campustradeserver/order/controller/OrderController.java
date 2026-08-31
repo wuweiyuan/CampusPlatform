@@ -46,6 +46,26 @@ public class OrderController {
         return new ApiResponse<>(0,"付款成功",null);
     }
 
+    @PostMapping("/{orderId}/complete")
+    public ApiResponse<Void> completeOrder(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ){
+        validateOrderId(orderId);
+        orderService.completeOrder(currentUser.id(), orderId);
+        return new ApiResponse<>(0,"订单已确认完成",null);
+    }
+
+    @GetMapping("/{orderId}")
+    public ApiResponse<OrderDetailResponse> getOrderDetail(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ){
+        validateOrderId(orderId);
+        OrderDetailResponse response = orderService.getOrderDetail(currentUser.id(), orderId);
+        return new ApiResponse<>(0,"查询订单详情完成",response);
+    }
+
     private void validateOrderId(Long orderId){
         if(orderId == null || orderId <=0){
             throw new BusinessException(400,"订单ID必须为正整数");

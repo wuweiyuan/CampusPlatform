@@ -1,10 +1,15 @@
 package com.campus.trade.campustradeserver.order.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.campus.trade.campustradeserver.common.api.PageResponse;
 import com.campus.trade.campustradeserver.common.exception.BusinessException;
+import com.campus.trade.campustradeserver.order.dto.OrderQuery;
 import com.campus.trade.campustradeserver.order.entity.Order;
 import com.campus.trade.campustradeserver.order.enums.OrderStatus;
 import com.campus.trade.campustradeserver.order.mapper.OrderMapper;
 import com.campus.trade.campustradeserver.order.vo.OrderDetailResponse;
+import com.campus.trade.campustradeserver.order.vo.OrderPageResponse;
 import com.campus.trade.campustradeserver.product.entity.Product;
 import com.campus.trade.campustradeserver.product.enums.ProductStatus;
 import com.campus.trade.campustradeserver.product.mapper.ProductMapper;
@@ -115,6 +120,86 @@ public class OrderService {
 
     }
 
+    @Transactional
+    public void completeOrder(Long buyerId,Long orderId){
+        Order order = orderMapper.selectById(orderId);
+        if(order == null){
+            throw new BusinessException(4001,"订单不存在");
+        }
+        if(!order.getBuyerId().equals(buyerId)){
+            throw new AccessDeniedException("无权确认该订单");
+        }
+        if(order.getStatus() != OrderStatus.PAID){
+            throw new BusinessException(4002,"当前订单状态不允许确认完成");
+        }
+        int updatedRow = orderMapper.updateStatusAndCompletedAtIfCurrentStatus(orderId,OrderStatus.PAID.getCode(),OrderStatus.COMPLETED.getCode());
+        if(updatedRow != 1){
+            throw new BusinessException(4002,"当前订单状态不允许确认完成");
+        }
+    }
+
+    public OrderDetailResponse getOrderDetail (Long currentUserId, Long orderId){
+        Order order = orderMapper.selectById(orderId);
+        if(order == null){
+            throw new BusinessException(4001,"订单不存在");
+        }
+        boolean isBuyer = order.getBuyerId().equals(currentUserId);
+        boolean isSeller = order.getSellerId().equals(currentUserId);
+        if(!isBuyer && !isSeller){
+            throw new AccessDeniedException("无权查看该订单");
+        }
+        OrderDetailResponse response = orderMapper.selectOrderDetailById(orderId);
+        if (response == null) {
+            throw new BusinessException(4001, "订单详情不存在");
+        }
+        return response;
+    }
+
+    public PageResponse<OrderPageResponse> listBuyingOrders(
+            Long buyerId,
+            OrderQuery query
+    ) {
+        Page<OrderPageResponse> page = new Page<>(
+                query.getPage(),
+                query.getPageSize()
+        );
+
+        IPage<OrderPageResponse> result = orderMapper.selectBuyingOrderPage(
+                page,
+                buyerId
+        );
+
+        return toPageResponse(result);
+    }
+
+    public PageResponse<OrderPageResponse> listSellingOrders(
+            Long sellerId,
+            OrderQuery query
+    ) {
+        Page<OrderPageResponse> page = new Page<>(
+                query.getPage(),
+                query.getPageSize()
+        );
+
+        IPage<OrderPageResponse> result = orderMapper.selectSellingOrderPage(
+                page,
+                sellerId
+        );
+
+        return toPageResponse(result);
+    }
+
+    private PageResponse<OrderPageResponse> toPageResponse(
+            IPage<OrderPageResponse> result
+    ) {
+        PageResponse<OrderPageResponse> response = new PageResponse<>();
+        response.setPage(Math.toIntExact(result.getCurrent()));
+        response.setPageSize(Math.toIntExact(result.getSize()));
+        response.setTotal(result.getTotal());
+        response.setRecords(result.getRecords());
+        return response;
+    }
+
     private void insertOrderWithRetry(Order order){
         for (int attempt = 0; attempt < ORDER_NO_RETRY_LIMIT; attempt++){
             order.setOrderNo(generateOrderNo());
@@ -138,4 +223,6 @@ public class OrderService {
         return timePart + randomPart;
 
     }
+
+
 }
