@@ -10,8 +10,10 @@ import com.campus.trade.campustradeserver.product.enums.ProductStatus;
 import com.campus.trade.campustradeserver.product.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -54,6 +56,36 @@ public class OrderService {
             throw new BusinessException(400,"订单创建后查询失败");
         }
         return response;
+    }
+
+    @Transactional
+    public void cancelOrder(Long buyerId,Long orderId){
+        Order order = orderMapper.selectById(orderId);
+        if(order == null){
+            throw new BusinessException(4001,"订单不存在");
+        }
+        if(!order.getBuyerId().equals(buyerId)){
+            throw new AccessDeniedException("无权取消该订单");
+        }
+        if(order.getStatus() != OrderStatus.PENDING_PAYMENT){
+            throw new BusinessException(4002,"当前订单状态不允许取消");
+        }
+        int updatedOrderRows = orderMapper.updateStatusIfCurrentStatus(
+                orderId,
+                OrderStatus.PENDING_PAYMENT.getCode(),
+                OrderStatus.CANCELLED.getCode()
+        );
+        if(updatedOrderRows !=1){
+            throw new BusinessException(4002,"当前订单状态不允许取消");
+        }
+        int updatedProductRows = productMapper.updateStatusIfCurrentStatus(
+                order.getProductId(),
+                ProductStatus.LOCKED.name(),
+                ProductStatus.ON_SALE.name()
+        );
+        if (updatedProductRows != 1) {
+            throw new BusinessException(4002, "订单关联商品状态异常，取消失败");
+        }
     }
 
     private void insertOrderWithRetry(Order order){

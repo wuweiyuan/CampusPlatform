@@ -6,6 +6,8 @@ import com.campus.trade.campustradeserver.order.vo.OrderDetailResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+
 
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
@@ -34,4 +36,18 @@ public interface OrderMapper extends BaseMapper<Order> {
                  where o.id = #{orderId}
     """)
     OrderDetailResponse selectOrderDetailById(@Param("orderId") Long orderId);
+
+
+    @Update("""
+        UPDATE orders SET status = #{targetStatus}
+        WHERE id = #{orderId}
+        AND status = #{expectedStatus}
+    """)
+    int updateStatusIfCurrentStatus(
+            @Param("orderId") Long orderId,
+            @Param("expectedStatus") String expectedStatus,
+            @Param("targetStatus") String targetStatus
+    );
+
+
 }
