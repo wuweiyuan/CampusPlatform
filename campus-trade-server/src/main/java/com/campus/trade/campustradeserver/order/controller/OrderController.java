@@ -36,6 +36,16 @@ public class OrderController {
         return new ApiResponse<>(0,"订单已取消",null);
     }
 
+    @PostMapping("/{orderId}/pay")
+    public ApiResponse<Void> payOrder(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ){
+        validateOrderId(orderId);
+        orderService.payOrder(currentUser.id(), orderId);
+        return new ApiResponse<>(0,"付款成功",null);
+    }
+
     private void validateOrderId(Long orderId){
         if(orderId == null || orderId <=0){
             throw new BusinessException(400,"订单ID必须为正整数");

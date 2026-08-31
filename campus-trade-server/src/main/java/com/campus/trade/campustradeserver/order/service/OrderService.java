@@ -88,6 +88,33 @@ public class OrderService {
         }
     }
 
+
+    @Transactional
+    public void payOrder(Long buyerId,Long orderId){
+        Order order = orderMapper.selectById(orderId);
+        if(order == null){
+            throw new BusinessException(4001,"订单不存在");
+        }
+
+        if(!order.getBuyerId().equals(buyerId)){
+            throw new AccessDeniedException("无权支付该订单");
+        }
+
+        if(order.getStatus()!= OrderStatus.PENDING_PAYMENT){
+            throw new BusinessException(4002,"当前订单状态不允许付款");
+        }
+        int updatedOrderRows = orderMapper.updateStatusAndPaidAtIfCurrentStatus(orderId,OrderStatus.PENDING_PAYMENT.getCode(), OrderStatus.PAID.getCode());
+        if(updatedOrderRows != 1){
+            throw new BusinessException(4002, "当前订单状态不允许付款");
+        }
+
+        int updatedProductRows = productMapper.updateStatusIfCurrentStatus(order.getProductId(),ProductStatus.LOCKED.name(), ProductStatus.SOLD.name());
+        if(updatedProductRows != 1){
+            throw new BusinessException(4002,"订单关联商品状态异常，付款失败");
+        }
+
+    }
+
     private void insertOrderWithRetry(Order order){
         for (int attempt = 0; attempt < ORDER_NO_RETRY_LIMIT; attempt++){
             order.setOrderNo(generateOrderNo());

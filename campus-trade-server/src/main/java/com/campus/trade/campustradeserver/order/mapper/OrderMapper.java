@@ -49,5 +49,18 @@ public interface OrderMapper extends BaseMapper<Order> {
             @Param("targetStatus") String targetStatus
     );
 
+    @Update("""
+    UPDATE orders
+    SET status = #{targetStatus},
+    paid_at = NOW()
+    WHERE id = #{orderId}
+    AND status = #{expectedStatus}
+""")
+    int updateStatusAndPaidAtIfCurrentStatus(
+            @Param("orderId") Long orderId,
+            @Param("expectedStatus") String expectedStatus,
+                    @Param("targetStatus") String targetStatus
+    );
+
 
 }
