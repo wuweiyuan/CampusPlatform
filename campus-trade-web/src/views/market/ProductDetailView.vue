@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
 import { addFavorite, removeFavorite } from "../../api/favorite";
 import { getErrorMessage } from "../../api/http";
+import { createOrder } from "../../api/order";
 import { getProduct, type ProductDetail } from "../../api/product";
 import { useAuthStore } from "../../stores/auth";
 const route = useRoute();
@@ -13,7 +14,14 @@ const product = ref<ProductDetail>();
 const loading = ref(true);
 const errorMessage = ref("");
 const favoriteLoading = ref(false);
+const buyLoading = ref(false);
 const isOwner = computed(() => product.value?.sellerId === authStore.user?.id);
+const canBuy = computed(
+  () =>
+    authStore.isAuthenticated &&
+    product.value?.status === "ON_SALE" &&
+    !isOwner.value,
+);
 const canToggleFavorite = computed(
   () =>
     authStore.isAuthenticated &&
@@ -50,6 +58,31 @@ async function toggleFavorite() {
     );
   } finally {
     favoriteLoading.value = false;
+  }
+}
+async function buy() {
+  if (!product.value) return;
+
+  try {
+    await ElMessageBox.confirm(
+      `确定购买“${product.value.title}”吗？最终价格以服务端订单快照为准。`,
+      "确认购买",
+      {
+        type: "warning",
+        confirmButtonText: "确认下单",
+        cancelButtonText: "再想想",
+      },
+    );
+    buyLoading.value = true;
+    await createOrder(product.value.id);
+    ElMessage.success("下单成功");
+    await router.push({ name: "orders", query: { tab: "buying" } });
+  } catch (error) {
+    if (error !== "cancel" && error !== "close") {
+      ElMessage.error(getErrorMessage(error, "下单失败"));
+    }
+  } finally {
+    buyLoading.value = false;
   }
 }
 onMounted(load);
@@ -97,6 +130,14 @@ onMounted(load);
             type="primary"
             @click="router.push(`/products/${product.id}/edit`)"
             >编辑商品</el-button
+          >
+          <el-button
+            v-if="canBuy"
+            type="primary"
+            :loading="buyLoading"
+            :disabled="buyLoading"
+            @click="buy"
+            >立即购买</el-button
           >
           <el-button
             v-if="canToggleFavorite"

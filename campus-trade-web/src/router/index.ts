@@ -56,8 +56,7 @@ const router = createRouter({
         {
           path: "orders",
           name: "orders",
-          component: () => import("../views/ComingSoonView.vue"),
-          props: { title: "我的订单", description: "订单功能将在阶段五完成。" },
+          component: () => import("../views/order/MyOrdersView.vue"),
           meta: { requiresAuth: true },
         },
         {
@@ -68,9 +67,12 @@ const router = createRouter({
         },
         {
           path: "admin",
-          name: "admin",
-          component: () => import("../views/ComingSoonView.vue"),
-          props: { title: "管理后台", description: "管理功能将在阶段六完成。" },
+          redirect: { name: "admin-categories" },
+        },
+        {
+          path: "admin/categories",
+          name: "admin-categories",
+          component: () => import("../views/admin/CategoryManageView.vue"),
           meta: { requiresAuth: true, roles: ["ADMIN"] },
         },
       ],

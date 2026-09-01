@@ -31,6 +31,11 @@ async function handleLogout() {
           ><RouterLink to="/products/new">发布商品</RouterLink
           ><RouterLink to="/my-products">我的发布</RouterLink
           ><RouterLink to="/favorites">我的收藏</RouterLink
+          ><RouterLink to="/orders">我的订单</RouterLink
+          ><RouterLink
+            v-if="authStore.user?.role === 'ADMIN'"
+            to="/admin/categories"
+            >管理后台</RouterLink
           ><RouterLink to="/profile">个人中心</RouterLink></template
         >
       </nav>

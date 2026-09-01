@@ -2,10 +2,13 @@ package com.campus.trade.campustradeserver.order.controller;
 
 import com.campus.trade.campustradeserver.auth.security.AuthenticatedUser;
 import com.campus.trade.campustradeserver.common.api.ApiResponse;
+import com.campus.trade.campustradeserver.common.api.PageResponse;
 import com.campus.trade.campustradeserver.common.exception.BusinessException;
 import com.campus.trade.campustradeserver.order.dto.CreateOrderRequest;
+import com.campus.trade.campustradeserver.order.dto.OrderQuery;
 import com.campus.trade.campustradeserver.order.service.OrderService;
 import com.campus.trade.campustradeserver.order.vo.OrderDetailResponse;
+import com.campus.trade.campustradeserver.order.vo.OrderPageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -64,6 +67,24 @@ public class OrderController {
         validateOrderId(orderId);
         OrderDetailResponse response = orderService.getOrderDetail(currentUser.id(), orderId);
         return new ApiResponse<>(0,"查询订单详情完成",response);
+    }
+
+    @GetMapping("/buying")
+    public ApiResponse<PageResponse<OrderPageResponse>> listBuyingOrders (
+            @Valid OrderQuery query,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+            ){
+        PageResponse<OrderPageResponse> response = orderService.listBuyingOrders(currentUser.id(), query);
+        return new ApiResponse<>(0,"查询买入订单成功",response);
+    }
+
+    @GetMapping("/selling")
+    public ApiResponse<PageResponse<OrderPageResponse>> listSellingOrders (
+            @Valid OrderQuery query,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ){
+        PageResponse<OrderPageResponse> response = orderService.listSellingOrders(currentUser.id(), query);
+        return new ApiResponse<>(0,"查询卖出订单成功",response);
     }
 
     private void validateOrderId(Long orderId){

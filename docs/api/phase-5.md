@@ -228,7 +228,7 @@ Authorization: Bearer <JWT Token>
 ```json
 {
   "code": 0,
-  "message": "订单已完成",
+  "message": "订单已确认完成",
   "data": null
 }
 ```
