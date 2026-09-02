@@ -9,6 +9,8 @@ import com.campus.trade.campustradeserver.auth.security.JwtService;
 import com.campus.trade.campustradeserver.auth.security.TokenBlacklistService;
 import com.campus.trade.campustradeserver.common.exception.BusinessException;
 import com.campus.trade.campustradeserver.user.entity.SysUser;
+import com.campus.trade.campustradeserver.user.enums.UserRole;
+import com.campus.trade.campustradeserver.user.enums.UserStatus;
 import com.campus.trade.campustradeserver.user.mapper.SysUserMapper;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +47,8 @@ public class AuthService {
         sysUser.setUsername(registerRequest.getUsername());
         sysUser.setEmail(registerRequest.getEmail());
         sysUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        sysUser.setRole("USER");
-        sysUser.setStatus(1);
+        sysUser.setRole(UserRole.USER);
+        sysUser.setStatus(UserStatus.ENABLED);
         sysUser.setEmailVerified(true);
 
         sysUserMapper.insert(sysUser);
@@ -59,7 +61,7 @@ public class AuthService {
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BusinessException(1004, "用户名或密码错误");
         }
-        if (!Integer.valueOf(1).equals(user.getStatus())) {
+        if (user.getStatus() != UserStatus.ENABLED) {
             throw new BusinessException(1003, "账号已禁用");
         }
 
@@ -85,7 +87,7 @@ public class AuthService {
         if (user == null) {
             throw new BusinessException(401, "用户不存在或登录已失效");
         }
-        if (!Integer.valueOf(1).equals(user.getStatus())) {
+        if (user.getStatus() != UserStatus.ENABLED) {
             throw new BusinessException(1003, "账号已禁用");
         }
         UserInfoResponse response = new UserInfoResponse();

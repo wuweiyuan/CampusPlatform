@@ -1,27 +1,18 @@
-package com.campus.trade.campustradeserver.user.entity;
+package com.campus.trade.campustradeserver.admin.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.campus.trade.campustradeserver.user.enums.UserRole;
 import com.campus.trade.campustradeserver.user.enums.UserStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
-
 @Data
-@TableName("sys_user")
-public class SysUser {
-    @TableId(type = IdType.AUTO)
+public class AdminUserResponse {
     private Long id;
-
     private String username;
     private String email;
-    private String password;
     private UserRole role;
     private UserStatus status;
-    private Boolean emailVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

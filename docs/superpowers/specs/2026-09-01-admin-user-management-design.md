@@ -4,11 +4,22 @@
 
 管理员能够分页查看、筛选、启用或禁用用户；禁用后该用户不能登录，已有 JWT 也立即失效。
 
+## 用户角色与状态枚举
+
+用户角色和启用状态在 Java 代码中统一使用枚举，消除散落的字符串与数值字面量：
+
+- `UserRole`：`USER`、`ADMIN`，持久化值与 JSON 值均为 `"USER"`、`"ADMIN"`。
+- `UserStatus`：`ENABLED(1)`、`DISABLED(0)`，持久化值与 JSON 值仍为数值 `1`、`0`。
+
+两个枚举均采用 MyBatis-Plus `@EnumValue` 映射已有的 `sys_user.role VARCHAR(16)` 和 `sys_user.status TINYINT` 列；不修改表结构或存量数据。`SysUser` 的 `role`、`status` 字段改为对应枚举。接口保持既有契约：角色传/返回字符串，状态传/返回数值；枚举负责 JSON 的序列化与反序列化。
+
+枚举改动必须同步覆盖注册、登录、`/api/auth/me`、JWT 签发、JWT 过滤器、管理员用户 DTO/VO、Service 查询和状态更新。Spring Security 的权限名仍为 `ROLE_ADMIN`、`ROLE_USER`，由 `UserRole` 的代码值拼接。
+
 ## 安全模型
 
 `JwtAuthenticationFilter` 在 JWT 验签、黑名单检查后，按 Token 的 `userId` 查询 `sys_user`：
 
-- 用户不存在或 `status = 0`：不建立 Spring Security 登录上下文，后续受保护请求返回 HTTP 401。
+- 用户不存在或 `status = DISABLED`：不建立 Spring Security 登录上下文，后续受保护请求返回 HTTP 401。
 - 用户正常：使用数据库最新 `id`、`username`、`role` 建立 `AuthenticatedUser` 与 `ROLE_<role>` 权限。
 
 这让禁用与角色变化立即生效，不信任旧 Token 中的角色或账号状态。
@@ -24,7 +35,7 @@
 
 ## 业务规则
 
-- `status = 1` 为启用，`status = 0` 为禁用。
+- `UserStatus.ENABLED` 的接口值为 `1`，`UserStatus.DISABLED` 的接口值为 `0`。
 - 管理员不能禁用自己，其他管理员也适用此规则。
 - 公开注册逻辑保持不变，始终创建 `USER`。
 - 启用用户不会恢复已失效的旧 Token；用户需重新登录获取新 Token。

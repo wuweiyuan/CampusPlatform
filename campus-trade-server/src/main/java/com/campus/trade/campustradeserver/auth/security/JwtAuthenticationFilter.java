@@ -1,5 +1,8 @@
 package com.campus.trade.campustradeserver.auth.security;
 
+import com.campus.trade.campustradeserver.user.entity.SysUser;
+import com.campus.trade.campustradeserver.user.enums.UserStatus;
+import com.campus.trade.campustradeserver.user.mapper.SysUserMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -24,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final SysUserMapper sysUserMapper;
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -52,13 +56,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             Number userId = claims.get("userId", Number.class);
-            String username = claims.getSubject();
-            String role = claims.get("role", String.class);
+
+            if(userId == null){
+                SecurityContextHolder.clearContext();
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            SysUser user = sysUserMapper.selectById(userId.longValue());
+            if(user == null || user.getStatus() != UserStatus.ENABLED || user.getRole() == null){
+                SecurityContextHolder.clearContext();
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             AuthenticatedUser principal = new AuthenticatedUser(
-                    userId.longValue(),
-                    username,
-                    role
+                    user.getId(),
+                    user.getUsername(),
+                    user.getRole().getCode()
             );
 
             UsernamePasswordAuthenticationToken authentication =
@@ -67,7 +82,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             null,
                             List.of(
                                     new SimpleGrantedAuthority(
-                                            "ROLE_" + role
+                                            "ROLE_" +  user.getRole().getCode()
                                     )
                             )
                     );

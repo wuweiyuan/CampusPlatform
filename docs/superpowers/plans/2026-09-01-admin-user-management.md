@@ -4,7 +4,7 @@
 
 **Goal:** 管理员可分页管理用户状态；禁用用户后不能登录且旧 JWT 立即失效。
 
-**Architecture:** JWT 过滤器在验签后从 `sys_user` 读取最新用户状态与角色；管理员用户 Service 复用 `SysUserMapper` 的 MyBatis-Plus 分页，不返回实体的密码字段；Vue 页面通过独立 API 模块提供筛选、分页和状态操作。
+**Architecture:** `UserRole` 与 `UserStatus` 是 `sys_user` 的唯一角色/状态表达；它们用 MyBatis-Plus `@EnumValue` 保持既有数据库值和 API JSON 值。JWT 过滤器在验签后从 `sys_user` 读取最新枚举状态与角色；管理员用户 Service 复用 `SysUserMapper` 的 MyBatis-Plus 分页，不返回实体的密码字段；Vue 页面通过独立 API 模块提供筛选、分页和状态操作。
 
 **Tech Stack:** Spring Boot、Spring Security、MyBatis-Plus、Vue 3、TypeScript、Element Plus。
 
@@ -35,27 +35,42 @@ PATCH /api/admin/users/{id}/status
 
 用户不存在为 `1005`，管理员禁用自己为 `1006`；普通用户为 HTTP 403；禁用后旧 Token 的受保护请求为 HTTP 401。
 
-### Task 2: 每请求检查用户状态
+### Task 2: 将用户角色和状态收敛为枚举
+
+**Files:**
+- Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/user/enums/UserRole.java`
+- Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/user/enums/UserStatus.java`
+- Modify: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/user/entity/SysUser.java`
+- Modify: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/auth/service/AuthService.java`
+- Modify: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/auth/security/JwtService.java`
+- Modify: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/auth/dto/UserInfoResponse.java`
+
+- [ ] `UserRole` 只有 `USER`、`ADMIN` 两个值，以 `@EnumValue` 的字符串代码保存；`UserStatus` 只有 `ENABLED(1)`、`DISABLED(0)`，以 `@EnumValue` 的数值代码保存。两个枚举负责将既有 JSON 值反序列化为枚举，并将代码值序列化为 JSON。
+- [ ] `SysUser.role` 改为 `UserRole`，`SysUser.status` 改为 `UserStatus`；不修改 `sys_user` 表结构或已有数据。
+- [ ] 注册时设置 `UserRole.USER`、`UserStatus.ENABLED`；登录和 `/api/auth/me` 使用 `UserStatus.ENABLED` 判断账号状态；登录响应的角色字段改为 `UserRole`。
+- [ ] JWT 的 `role` claim 与权限名使用 `user.getRole().getCode()`，使 Token 与 Spring Security 权限值仍为 `USER`、`ADMIN`。
+
+### Task 3: 每请求检查用户状态
 
 **Files:**
 - Modify: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/auth/security/JwtAuthenticationFilter.java`
 
 - [ ] 向过滤器注入 `SysUserMapper`，并在 Token 验签、黑名单检查后读取 Token 中的 `userId`。
-- [ ] 查询用户并仅在账号存在且 `status == 1` 时建立认证上下文：
+- [ ] 查询用户并仅在账号存在且 `status == UserStatus.ENABLED` 时建立认证上下文：
 
 ```java
 SysUser user = sysUserMapper.selectById(userId.longValue());
-if (user == null || !Integer.valueOf(1).equals(user.getStatus())) {
+if (user == null || user.getStatus() != UserStatus.ENABLED) {
     SecurityContextHolder.clearContext();
     filterChain.doFilter(request, response);
     return;
 }
 ```
 
-- [ ] 用 `user.getId()`、`user.getUsername()`、`user.getRole()` 构建 `AuthenticatedUser` 和 `ROLE_<role>`，不使用 Token 中过期的用户名或角色。
+- [ ] 用 `user.getId()`、`user.getUsername()`、`user.getRole().getCode()` 构建 `AuthenticatedUser` 和 `ROLE_<role>`，不使用 Token 中过期的用户名或角色。
 - [ ] 保持公共接口匿名可访问；禁用用户访问任何受保护接口时由现有 `RestAuthenticationEntryPoint` 返回 HTTP 401。
 
-### Task 3: 管理员用户后端接口
+### Task 4: 管理员用户后端接口
 
 **Files:**
 - Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/admin/dto/AdminUserQuery.java`
@@ -64,12 +79,12 @@ if (user == null || !Integer.valueOf(1).equals(user.getStatus())) {
 - Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/admin/service/AdminUserService.java`
 - Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/admin/controller/AdminUserController.java`
 
-- [ ] `AdminUserQuery` 提供默认 `page = 1`、`pageSize = 12` 与 `@Min/@Max`；`role` 用 `@Pattern(regexp = "USER|ADMIN")`，`status` 用 `@Min(0) @Max(1)`。
-- [ ] `AdminUserService.listUsers(query)` 使用 `Page<SysUser>` 与 LambdaQueryWrapper：`username`、`email` 各自按非空模糊匹配，角色与状态精确匹配，按 `createdAt`、`id` 倒序；将结果映射为不含密码的 `AdminUserResponse` 和 `PageResponse`。
-- [ ] `updateUserStatus(currentAdminId, targetUserId, status)`：先查目标用户；不存在抛 `new BusinessException(1005, "用户不存在")`；目标 ID 等于当前管理员 ID 且请求停用时抛 `new BusinessException(1006, "不能禁用当前登录管理员")`；否则更新 `status`。
+- [ ] `AdminUserQuery` 提供默认 `page = 1`、`pageSize = 12` 与 `@Min/@Max`；`role` 类型为 `UserRole`，`status` 类型为 `UserStatus`，由枚举将既有 API 值转换并拒绝非法值。`UserStatusUpdateRequest.status` 类型为必填 `UserStatus`。
+- [ ] `AdminUserService.listUsers(query)` 使用 `Page<SysUser>` 与 LambdaQueryWrapper：`username`、`email` 各自按非空模糊匹配，角色与状态枚举精确匹配，按 `createdAt`、`id` 倒序；将结果映射为不含密码的 `AdminUserResponse` 和 `PageResponse`。
+- [ ] `updateUserStatus(currentAdminId, targetUserId, status)`：先查目标用户；不存在抛 `new BusinessException(1005, "用户不存在")`；目标 ID 等于当前管理员 ID 且请求状态为 `UserStatus.DISABLED` 时抛 `new BusinessException(1006, "不能禁用当前登录管理员")`；否则更新 `status`。
 - [ ] Controller 使用 `@RequestMapping("/api/admin/users")`、`@Valid` 与 `@AuthenticationPrincipal AuthenticatedUser`，返回统一 `ApiResponse`；不在 Controller 复制管理员角色判断，由已有 `/api/admin/**` 安全规则集中处理。
 
-### Task 4: 用户管理前端 API 与页面
+### Task 5: 用户管理前端 API 与页面
 
 **Files:**
 - Create: `campus-trade-web/src/api/admin-user.ts`
@@ -80,7 +95,7 @@ if (user == null || !Integer.valueOf(1).equals(user.getStatus())) {
 - [ ] 状态按钮根据当前状态显示“禁用”或“启用”；二次确认后调用接口并刷新当前页。当前登录管理员对应行的“禁用”按钮禁用并提示“不能禁用自己”。
 - [ ] 使用 scoped CSS 延续管理员分类页面的现有色彩与表格风格。
 
-### Task 5: 用户管理路由、菜单与验收
+### Task 6: 用户管理路由、菜单与验收
 
 **Files:**
 - Modify: `campus-trade-web/src/router/index.ts`
