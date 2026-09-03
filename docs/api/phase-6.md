@@ -193,3 +193,106 @@ Content-Type: application/json
 | `403` | 当前用户不是管理员。 |
 | `1005` | 要操作的用户不存在。 |
 | `1006` | 当前管理员尝试禁用自己的账号。 |
+
+## 商品管理
+
+### 管理员商品对象
+
+```json
+{
+  "id": 101,
+  "title": "九成新高等数学教材",
+  "price": 25.5,
+  "imageBase64": "data:image/jpeg;base64,/9j/4AAQ...",
+  "status": "ON_SALE",
+  "categoryId": 1,
+  "categoryName": "教材书籍",
+  "sellerId": 8,
+  "sellerName": "zhangsan",
+  "viewCount": 36,
+  "createdAt": "2026-09-02T10:00:00",
+  "updatedAt": "2026-09-02T10:00:00"
+}
+```
+
+- `status`：`ON_SALE`（在售）、`LOCKED`（已锁定，等待买家付款）、`SOLD`（已售出）、`OFF_SHELF`（已下架）。
+- 管理员商品列表包含全部卖家与全部商品状态；不返回卖家邮箱、密码哈希、JWT 或其他敏感认证数据。
+- `imageBase64` 可以为 `null`，前端应显示图片占位。
+
+### 分页查看与筛选商品
+
+```http
+GET /api/admin/products?page=1&pageSize=12&sellerId=8&categoryId=1&status=ON_SALE&keyword=高等数学
+```
+
+所有筛选参数均为可选；不传筛选条件时返回全部商品。结果按创建时间、ID 倒序排列。
+
+| 参数 | 类型 | 规则 | 说明 |
+| --- | --- | --- | --- |
+| `page` | integer | 最小为 `1`，默认 `1` | 页码。 |
+| `pageSize` | integer | `1`–`50`，默认 `12` | 每页条数。 |
+| `sellerId` | integer | 正整数 | 精确筛选卖家。 |
+| `categoryId` | integer | 正整数 | 精确筛选分类。 |
+| `status` | string | `ON_SALE`、`LOCKED`、`SOLD`、`OFF_SHELF` | 精确筛选商品状态。 |
+| `keyword` | string | 最长 60 个字符 | 按商品标题或描述模糊筛选；去除首尾空格后为空则视为未传。 |
+
+成功时 `data` 为统一分页对象，`records` 中的每项均为上述管理员商品对象：
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "records": [
+      {
+        "id": 101,
+        "title": "九成新高等数学教材",
+        "price": 25.5,
+        "imageBase64": null,
+        "status": "ON_SALE",
+        "categoryId": 1,
+        "categoryName": "教材书籍",
+        "sellerId": 8,
+        "sellerName": "zhangsan",
+        "viewCount": 36,
+        "createdAt": "2026-09-02T10:00:00",
+        "updatedAt": "2026-09-02T10:00:00"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "pageSize": 12
+  }
+}
+```
+
+### 管理员下架商品
+
+```http
+PATCH /api/admin/products/{id}/off-shelf
+```
+
+请求不需要 Body。成功时返回：
+
+```json
+{
+  "code": 0,
+  "message": "商品已下架",
+  "data": null
+}
+```
+
+- 管理员可以下架任何卖家的 `ON_SALE` 商品，不受商品归属限制。
+- 只能由 `ON_SALE` 变为 `OFF_SHELF`；`LOCKED` 商品已有待付款买家，不能下架；`SOLD`、`OFF_SHELF` 商品也不能重复下架。
+- 下架不删除商品、收藏、浏览量或历史订单；不修改任何订单状态。
+- Service 层必须在读取数据库当前状态后判断，不能信任前端传入的状态，也不能仅靠前端隐藏按钮。
+
+### 商品管理错误约定
+
+| HTTP / code | 场景 |
+| --- | --- |
+| `400` | `page`、`pageSize`、`sellerId`、`categoryId`、`status`、`keyword` 或路径商品 ID 参数非法。 |
+| `401` | 未登录或 Token 无效。 |
+| `403` | 当前用户不是管理员。 |
+| `3001` | 要下架的商品不存在。 |
+| `3003` | 商品当前不是 `ON_SALE`，包括 `LOCKED`、`SOLD`、`OFF_SHELF`，不允许下架。 |
