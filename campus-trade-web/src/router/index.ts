@@ -75,6 +75,12 @@ const router = createRouter({
           component: () => import("../views/admin/CategoryManageView.vue"),
           meta: { requiresAuth: true, roles: ["ADMIN"] },
         },
+        {
+          path: "admin/users",
+          name: "admin-users",
+          component: () => import("../views/admin/UserManageView.vue"),
+          meta: { requiresAuth: true, roles: ["ADMIN"] },
+        },
       ],
     },
     {

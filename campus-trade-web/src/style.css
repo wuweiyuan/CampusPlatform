@@ -52,6 +52,18 @@ a {
   background: #f5f2e8;
   color: #164b3a;
 }
+.sidebar .nav-section {
+  margin: 12px 12px 0;
+  color: #bdd0bd;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.sidebar nav a.admin-link {
+  margin-left: 10px;
+  padding-block: 9px;
+  font-size: 14px;
+}
 .sidebar-note {
   margin-top: auto;
   line-height: 1.8;

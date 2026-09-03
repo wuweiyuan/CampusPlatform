@@ -3,6 +3,7 @@ package com.campus.trade.campustradeserver.common.exception;
 import com.campus.trade.campustradeserver.common.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,6 +16,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException exception){
         return ResponseEntity.badRequest().body(
                 new ApiResponse<>(exception.getCode(), exception.getMessage(),null)
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTypeMismatchException(
+            MethodArgumentTypeMismatchException exception
+    ){
+        return ResponseEntity.badRequest().body(
+                new ApiResponse<>(400,"请求参数不合法",null)
         );
     }
 
@@ -32,7 +42,7 @@ public class GlobalExceptionHandler {
     public  ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException exception){
         FieldError fieldError = exception.getBindingResult().getFieldError();
         String message = "请求参数不合法!";
-        if (fieldError != null && fieldError.getDefaultMessage() != null){
+        if (fieldError != null && !fieldError.isBindingFailure() && fieldError.getDefaultMessage() != null){
             message = fieldError.getDefaultMessage();
         }
 

@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campus.trade.campustradeserver.admin.dto.AdminUserQuery;
 import com.campus.trade.campustradeserver.admin.vo.AdminUserResponse;
 import com.campus.trade.campustradeserver.common.api.PageResponse;
+import com.campus.trade.campustradeserver.common.exception.BusinessException;
 import com.campus.trade.campustradeserver.user.entity.SysUser;
+import com.campus.trade.campustradeserver.user.enums.UserStatus;
 import com.campus.trade.campustradeserver.user.mapper.SysUserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,22 @@ public class AdminUserService {
         response.setTotal(result.getTotal());
         response.setRecords(result.getRecords().stream().map(this::toResponse).toList());
         return response;
+    }
+
+    public void updateUserStatus(
+            Long currentAdminId,
+            Long targetUserId,
+            UserStatus status
+    ){
+        SysUser targetUser = sysUserMapper.selectById(targetUserId);
+        if(targetUser == null){
+            throw new BusinessException(1005,"用户不存在");
+        }
+        if(targetUser.getId().equals(currentAdminId) && status == UserStatus.DISABLED){
+            throw new BusinessException(1006,"不能禁用当前登录管理员");
+        }
+        targetUser.setStatus(status);
+        sysUserMapper.updateById(targetUser);
     }
     private AdminUserResponse toResponse(SysUser user) {
         AdminUserResponse response = new AdminUserResponse();

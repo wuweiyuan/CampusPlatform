@@ -77,7 +77,7 @@ if (user == null || user.getStatus() != UserStatus.ENABLED) {
 - Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/admin/dto/UserStatusUpdateRequest.java`
 - Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/admin/vo/AdminUserResponse.java`
 - Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/admin/service/AdminUserService.java`
-- Create: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/admin/controller/AdminUserController.java`
+- Modify: `campus-trade-server/src/main/java/com/campus/trade/campustradeserver/admin/controller/AdminController.java`
 
 - [ ] `AdminUserQuery` 提供默认 `page = 1`、`pageSize = 12` 与 `@Min/@Max`；`role` 类型为 `UserRole`，`status` 类型为 `UserStatus`，由枚举将既有 API 值转换并拒绝非法值。`UserStatusUpdateRequest.status` 类型为必填 `UserStatus`。
 - [ ] `AdminUserService.listUsers(query)` 使用 `Page<SysUser>` 与 LambdaQueryWrapper：`username`、`email` 各自按非空模糊匹配，角色与状态枚举精确匹配，按 `createdAt`、`id` 倒序；将结果映射为不含密码的 `AdminUserResponse` 和 `PageResponse`。
@@ -90,10 +90,10 @@ if (user == null || user.getStatus() != UserStatus.ENABLED) {
 - Create: `campus-trade-web/src/api/admin-user.ts`
 - Create: `campus-trade-web/src/views/admin/UserManageView.vue`
 
-- [ ] 在 API 模块中定义 `AdminUser`、`AdminUserQuery`、`UserRole`，封装 `getAdminUsers(params)` 与 `updateAdminUserStatus(id, status)`；复用 `ApiResponse`、`PageResponse`。
-- [ ] 页面提供用户名/邮箱关键字、角色、状态筛选；任何筛选变化重载第 1 页。表格展示用户名、邮箱、角色、状态、创建时间和操作；提供 skeleton、错误重试、空状态、分页。
-- [ ] 状态按钮根据当前状态显示“禁用”或“启用”；二次确认后调用接口并刷新当前页。当前登录管理员对应行的“禁用”按钮禁用并提示“不能禁用自己”。
-- [ ] 使用 scoped CSS 延续管理员分类页面的现有色彩与表格风格。
+- [ ] `admin-user.ts` 定义 `UserRole = "USER" | "ADMIN"`、`UserStatus = 0 | 1`、`AdminUser` 与可选筛选字段 `AdminUserQuery`；从 `category.ts` 复用 `ApiResponse`，从 `product.ts` 复用 `PageResponse`。`getAdminUsers` 使用 `GET /admin/users` 和 Axios `params`；`updateAdminUserStatus` 使用 `PATCH /admin/users/{id}/status`，请求体为 `{ status }`。
+- [ ] `UserManageView.vue` 用一个可提交/重置的筛选表单管理用户名、邮箱、角色和状态；提交或重置时回到第 1 页，分页切换只改变 `page` 后重新加载。请求参数省略空字符串与未选择值。
+- [ ] 页面沿用分类管理页的米白、墨绿、带边框表格样式：标题区含 `ADMIN CONSOLE`、用户管理说明和总用户数；角色、状态使用清晰标签；表格展示用户名、邮箱、角色、状态、注册时间和操作。加载显示 skeleton，失败显示重试，空记录显示 empty，窄屏允许筛选区换行和表格横向滚动。
+- [ ] 状态按钮根据当前值显示“禁用”或“启用”；禁用确认文本必须说明旧 Token 会立即失效。确认后请求接口、显示成功/失败消息，并重新加载当前页。当前登录管理员所在行的禁用按钮必须禁用并提示“不能禁用自己”；后端 `1006` 仍是最终保障。
 
 ### Task 6: 用户管理路由、菜单与验收
 
@@ -103,7 +103,7 @@ if (user == null || user.getStatus() != UserStatus.ENABLED) {
 - Modify: `docs/学习清单/阶段-6-今日交接记录-2026-09-01.md`
 
 - [ ] 新增 `/admin/users` 路由：`meta: { requiresAuth: true, roles: ["ADMIN"] }`；`/admin` 仍重定向到分类页。
-- [ ] 在管理员可见的侧栏中新增“用户管理”，普通学生不渲染此链接。
+- [ ] 管理员侧栏把原“管理后台”单一链接改为管理区域内的“分类管理”“用户管理”两个链接；普通学生不渲染整个管理区域。
 - [ ] Postman：管理员分页与筛选成功；普通 `USER` Token 返回 403；管理员不能禁用自己；禁用用户不能登录；禁用前旧 Token 请求 `/api/auth/me` 或订单接口返回 401。
-- [ ] 浏览器：管理员可筛选、禁用、启用用户；学生无菜单且直接访问 `/admin/users` 跳 403。
+- [ ] 浏览器：管理员可筛选、翻页、禁用、启用用户；学生无菜单且直接访问 `/admin/users` 跳 403；禁用自己时前端按钮不可用，禁用其他用户时显示确认弹窗。
 - [ ] 回填阶段 6 交接记录；不运行构建、格式化、自动测试，记录为用户决定的例外。
