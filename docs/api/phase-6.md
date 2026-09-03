@@ -296,3 +296,95 @@ PATCH /api/admin/products/{id}/off-shelf
 | `403` | 当前用户不是管理员。 |
 | `3001` | 要下架的商品不存在。 |
 | `3003` | 商品当前不是 `ON_SALE`，包括 `LOCKED`、`SOLD`、`OFF_SHELF`，不允许下架。 |
+
+## 订单管理
+
+### 管理员订单对象
+
+```json
+{
+  "id": 18,
+  "orderNo": "20260903143000123123456",
+  "buyerId": 11,
+  "buyerName": "buyerA",
+  "sellerId": 8,
+  "sellerName": "zhangsan",
+  "productId": 101,
+  "productTitle": "九成新高等数学教材",
+  "productImageBase64": null,
+  "amount": 25.5,
+  "status": "PENDING_PAYMENT",
+  "createdAt": "2026-09-03T14:30:00",
+  "paidAt": null,
+  "completedAt": null,
+  "updatedAt": "2026-09-03T14:30:00"
+}
+```
+
+- `status`：`PENDING_PAYMENT`（待付款）、`CANCELLED`（已取消）、`PAID`（已付款）、`COMPLETED`（已完成）。
+- 管理员订单列表覆盖全部买家、卖家与订单状态，不返回买家或卖家的邮箱、密码哈希、JWT 等敏感认证数据。
+- `amount` 是订单创建时的金额快照；`productTitle`、`productImageBase64` 用于后台识别交易商品，图片可以为 `null`。
+
+### 分页查看与筛选订单
+
+```http
+GET /api/admin/orders?page=1&pageSize=12&orderNo=20260903143000123123456&status=PENDING_PAYMENT&buyerId=11&sellerId=8
+```
+
+所有筛选参数均为可选；不传筛选条件时返回全部订单。结果按创建时间、ID 倒序排列。
+
+| 参数 | 类型 | 规则 | 说明 |
+| --- | --- | --- | --- |
+| `page` | integer | 最小为 `1`，默认 `1` | 页码。 |
+| `pageSize` | integer | `1`–`50`，默认 `12` | 每页条数。 |
+| `orderNo` | string | 最长 32 个字符 | 精确筛选订单号。 |
+| `status` | string | `PENDING_PAYMENT`、`CANCELLED`、`PAID`、`COMPLETED` | 精确筛选订单状态。 |
+| `buyerId` | integer | 正整数 | 精确筛选买家。 |
+| `sellerId` | integer | 正整数 | 精确筛选卖家。 |
+
+成功时 `data` 为统一分页对象，`records` 中的每项均为上述管理员订单对象：
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "records": [
+      {
+        "id": 18,
+        "orderNo": "20260903143000123123456",
+        "buyerId": 11,
+        "buyerName": "buyerA",
+        "sellerId": 8,
+        "sellerName": "zhangsan",
+        "productId": 101,
+        "productTitle": "九成新高等数学教材",
+        "productImageBase64": null,
+        "amount": 25.5,
+        "status": "PENDING_PAYMENT",
+        "createdAt": "2026-09-03T14:30:00",
+        "paidAt": null,
+        "completedAt": null,
+        "updatedAt": "2026-09-03T14:30:00"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "pageSize": 12
+  }
+}
+```
+
+### 管理员订单管理边界
+
+- 本阶段订单接口只有上述查询接口；管理员可以查看全部订单，但不能替买家付款、取消订单或确认完成订单。
+- 不新增 `/api/admin/orders/{id}/pay`、`cancel`、`complete` 等状态变更接口，也不复用普通交易接口绕过买家身份与订单状态机。
+- 管理员前端只显示状态、交易双方、金额和时间，不显示订单状态操作按钮。
+
+### 订单管理错误约定
+
+| HTTP / code | 场景 |
+| --- | --- |
+| `400` | `page`、`pageSize`、`orderNo`、`status`、`buyerId` 或 `sellerId` 参数非法。 |
+| `401` | 未登录或 Token 无效。 |
+| `403` | 当前用户不是管理员。 |

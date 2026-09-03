@@ -137,4 +137,50 @@ public interface OrderMapper extends BaseMapper<Order> {
             Page<OrderPageResponse> page,
             @Param("sellerId") Long sellerId
     );
+
+    @Select("""
+      <script>
+      SELECT
+          o.id,
+          o.order_no AS orderNo,
+          o.buyer_id AS buyerId,
+          buyer.username AS buyerName,
+          o.seller_id AS sellerId,
+          seller.username AS sellerName,
+          o.product_id AS productId,
+          p.title AS productTitle,
+          p.image_base64 AS productImageBase64,
+          o.amount,
+          o.status,
+          o.created_at AS createdAt,
+          o.paid_at AS paidAt,
+          o.completed_at AS completedAt,
+          o.updated_at AS updatedAt
+      FROM orders o
+      INNER JOIN sys_user buyer ON buyer.id = o.buyer_id
+      INNER JOIN sys_user seller ON seller.id = o.seller_id
+      INNER JOIN product p ON p.id = o.product_id
+      WHERE 1 = 1
+      <if test="orderNo != null and orderNo != ''">
+          AND o.order_no = #{orderNo}
+      </if>
+      <if test="status != null and status != ''">
+          AND o.status = #{status}
+      </if>
+      <if test="buyerId != null">
+          AND o.buyer_id = #{buyerId}
+      </if>
+      <if test="sellerId != null">
+          AND o.seller_id = #{sellerId}
+      </if>
+      ORDER BY o.created_at DESC, o.id DESC
+      </script>
+      """)
+    IPage<OrderPageResponse> selectAdminOrderPage(
+            Page<OrderPageResponse> page,
+            @Param("orderNo") String orderNo,
+            @Param("status") String status,
+            @Param("buyerId") Long buyerId,
+            @Param("sellerId") Long sellerId
+    );
 }

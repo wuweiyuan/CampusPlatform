@@ -1,9 +1,11 @@
 package com.campus.trade.campustradeserver.admin.controller;
 
 
+import com.campus.trade.campustradeserver.admin.dto.AdminOrderQuery;
 import com.campus.trade.campustradeserver.admin.dto.AdminProductQuery;
 import com.campus.trade.campustradeserver.admin.dto.AdminUserQuery;
 import com.campus.trade.campustradeserver.admin.dto.UserStatusUpdateRequest;
+import com.campus.trade.campustradeserver.admin.service.AdminOrderService;
 import com.campus.trade.campustradeserver.admin.service.AdminProductService;
 import com.campus.trade.campustradeserver.admin.service.AdminUserService;
 
@@ -12,6 +14,7 @@ import com.campus.trade.campustradeserver.admin.vo.AdminUserResponse;
 import com.campus.trade.campustradeserver.auth.security.AuthenticatedUser;
 import com.campus.trade.campustradeserver.common.api.ApiResponse;
 import com.campus.trade.campustradeserver.common.api.PageResponse;
+import com.campus.trade.campustradeserver.order.vo.OrderPageResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     private final AdminUserService adminUserService;
     private final AdminProductService adminProductService;
+    private final AdminOrderService adminOrderService;
     @GetMapping("/users")
     public ApiResponse<PageResponse<AdminUserResponse>> listUsers(
             @Valid AdminUserQuery query
@@ -55,6 +59,12 @@ public class AdminController {
         adminProductService.offShelfProduct(id);
         return new ApiResponse<>(0,"商品已下架",null);
     }
+
+    @GetMapping("/orders")
+    public ApiResponse<PageResponse<OrderPageResponse>> listOrders(@Valid AdminOrderQuery query){
+        return ApiResponse.success(adminOrderService.listOrders(query));
+    }
+
     @GetMapping("/ping")
     public ApiResponse<String> ping(){
         return new ApiResponse<>(0,"管理员访问成功","pong");
