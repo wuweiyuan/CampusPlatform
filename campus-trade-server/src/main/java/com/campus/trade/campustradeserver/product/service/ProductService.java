@@ -29,6 +29,7 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
     private final ProductImageValidator productImageValidator;
+    private final HotProductService hotProductService;
 
     private Category getEnabledCategory(Long categoryId){
         Category category = categoryMapper.selectById(categoryId);
@@ -69,6 +70,7 @@ public class ProductService {
         product.setStatus(ProductStatus.ON_SALE.name());
         product.setViewCount(0L);
         productMapper.insert(product);
+        hotProductService.evictHotProductCache();
         return productMapper.selectById(product.getId());
     }
 
@@ -84,6 +86,7 @@ public class ProductService {
         product.setImageBase64(request.getImageBase64());
 
         productMapper.updateById(product);
+        hotProductService.evictHotProductCache();
         return productMapper.selectById(productId);
     }
 
@@ -91,6 +94,7 @@ public class ProductService {
         Product product = getOwnedOnSaleProduct(productId,sellerId);
         product.setStatus(ProductStatus.OFF_SHELF.name());
         productMapper.updateById(product);
+        hotProductService.evictHotProductCache();
 
     }
 
@@ -126,7 +130,7 @@ public class ProductService {
         if(updatedRows == 0){
             throw new BusinessException(3001,"商品不存在或不可公开访问");
         }
-
+        hotProductService.evictHotProductCache();
         ProductDetailResponse response = productMapper.selectOnSaleDetailById(productId,currentUserId);
         if(response == null){
             throw new BusinessException(3001,"商品不存在或不可公开访问");

@@ -9,6 +9,7 @@ import com.campus.trade.campustradeserver.common.exception.BusinessException;
 import com.campus.trade.campustradeserver.product.entity.Product;
 import com.campus.trade.campustradeserver.product.enums.ProductStatus;
 import com.campus.trade.campustradeserver.product.mapper.ProductMapper;
+import com.campus.trade.campustradeserver.product.service.HotProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AdminProductService {
     private final ProductMapper productMapper;
+    private final HotProductService hotProductService;
 
     public PageResponse<AdminProductResponse> listProducts(AdminProductQuery query){
         String keyword = normalize(query.getKeyword());
@@ -47,6 +49,7 @@ public class AdminProductService {
         if(!ProductStatus.ON_SALE.name().equals(product.getStatus())){
             throw new BusinessException(3003,"当前商品状态不允许下架");
         }
+
         int updatedRows = productMapper.updateStatusIfCurrentStatus(
                 productId,
                 ProductStatus.ON_SALE.name(),
@@ -55,6 +58,7 @@ public class AdminProductService {
         if(updatedRows != 1){
             throw new BusinessException(3003,"当前商品状态不允许下架");
         }
+        hotProductService.evictHotProductCache();
     }
 
     private String normalize(String value){

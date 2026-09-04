@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campus.trade.campustradeserver.admin.vo.AdminProductResponse;
 import com.campus.trade.campustradeserver.product.entity.Product;
+import com.campus.trade.campustradeserver.product.vo.HotProductResponse;
 import com.campus.trade.campustradeserver.product.vo.ProductDetailResponse;
 import com.campus.trade.campustradeserver.product.vo.ProductPageResponse;
 import org.apache.ibatis.annotations.Mapper;
@@ -12,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
 
 
 @Mapper
@@ -196,4 +198,25 @@ public interface ProductMapper extends BaseMapper<Product> {
             @Param("status") String status,
             @Param("keyword") String keyword
     );
+
+    @Select("""
+        SELECT
+                  p.id,
+                  p.title,
+                  p.price,
+                  p.status,
+                  p.category_id AS categoryId,
+                  c.name AS categoryName,
+                  p.seller_id AS sellerId,
+                  u.username AS sellerName,
+                  p.view_count AS viewCount,
+                  p.created_at AS createdAt
+                    FROM product p
+                    INNER JOIN category c ON c.id = p.category_id
+                    INNER JOIN sys_user u ON u.id = p.seller_id
+                    WHERE p.status = 'ON_SALE'
+                    ORDER BY p.view_count DESC,p.created_at DESC
+                    LIMIT 10
+    """)
+    List<HotProductResponse> selectHotProducts();
 }

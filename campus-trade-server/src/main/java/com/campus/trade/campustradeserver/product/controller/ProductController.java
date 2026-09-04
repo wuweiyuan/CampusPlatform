@@ -4,6 +4,8 @@ import com.campus.trade.campustradeserver.auth.security.AuthenticatedUser;
 import com.campus.trade.campustradeserver.category.entity.Category;
 import com.campus.trade.campustradeserver.category.mapper.CategoryMapper;
 
+import com.campus.trade.campustradeserver.product.service.HotProductService;
+import com.campus.trade.campustradeserver.product.vo.HotProductResponse;
 import com.campus.trade.campustradeserver.product.vo.ProductPageResponse;
 import com.campus.trade.campustradeserver.common.api.ApiResponse;
 import com.campus.trade.campustradeserver.common.api.PageResponse;
@@ -21,12 +23,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequestMapping("/api/products")
 @RestController
 @RequiredArgsConstructor
 public class ProductController {
     private final CategoryMapper categoryMapper;
     private final ProductService productService;
+    private final HotProductService hotProductService;
     @PostMapping
     public ApiResponse<ProductDetailResponse> createProduct(
             @Valid @RequestBody CreateProductRequest request,
@@ -51,6 +56,11 @@ public class ProductController {
         Long currentUserId = currentUser == null ? null : currentUser.id();
         ProductDetailResponse response =  productService.getOnSaleProductDetail(id, currentUserId);
         return ApiResponse.success(response);
+    }
+
+    @GetMapping("/hot")
+    public ApiResponse<List<HotProductResponse>> listHotProducts(){
+        return ApiResponse.success(hotProductService.listHotProducts());
     }
 
     @GetMapping("/mine")

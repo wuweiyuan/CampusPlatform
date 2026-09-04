@@ -30,6 +30,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/products")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/products/hot")
+                        .permitAll()
                         .requestMatchers(RegexRequestMatcher.regexMatcher(
                                 HttpMethod.GET,
                                 "^/api/products/-?\\d+$"

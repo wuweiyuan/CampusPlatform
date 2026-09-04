@@ -6,7 +6,9 @@ import { getCategories, type Category } from "../../api/category";
 import { addFavorite, removeFavorite } from "../../api/favorite";
 import { getErrorMessage } from "../../api/http";
 import {
+  getHotProducts,
   getProducts,
+  type HotProduct,
   type PageResponse,
   type ProductCard,
 } from "../../api/product";
@@ -16,6 +18,9 @@ const router = useRouter();
 const authStore = useAuthStore();
 const categories = ref<Category[]>([]);
 const records = ref<ProductCard[]>([]);
+const hotProducts = ref<HotProduct[]>([]);
+const hotLoading = ref(false);
+const hotErrorMessage = ref("");
 const keyword = ref("");
 const categoryId = ref<number>();
 const page = ref(1);
@@ -53,6 +58,17 @@ async function loadProducts(nextPage = page.value) {
     errorMessage.value = getErrorMessage(error, "商品列表加载失败");
   } finally {
     loading.value = false;
+  }
+}
+async function loadHotProducts() {
+  hotLoading.value = true;
+  hotErrorMessage.value = "";
+  try {
+    hotProducts.value = (await getHotProducts()).data.data;
+  } catch (error) {
+    hotErrorMessage.value = getErrorMessage(error, "热门商品加载失败");
+  } finally {
+    hotLoading.value = false;
   }
 }
 async function loadCategories() {
@@ -99,6 +115,7 @@ async function toggleFavorite(item: ProductCard) {
 }
 onMounted(() => {
   loadCategories();
+  loadHotProducts();
   loadProducts(1);
 });
 </script>
@@ -138,6 +155,51 @@ onMounted(() => {
         </button>
       </div>
     </div>
+    <section class="hot-products-section">
+      <header class="hot-products-heading">
+        <div>
+          <p class="hot-eyebrow">TRENDING NOW</p>
+          <h2>本周热门</h2>
+        </div>
+        <span>按浏览热度排序</span>
+      </header>
+      <div v-if="hotLoading" class="hot-products-grid">
+        <el-skeleton v-for="i in 4" :key="i" animated>
+          <template #template>
+            <el-skeleton-item variant="image" style="height: 96px" />
+            <el-skeleton-item style="width: 70%; margin-top: 10px" />
+          </template>
+        </el-skeleton>
+      </div>
+      <div v-else-if="hotErrorMessage" class="hot-products-message">
+        <span>{{ hotErrorMessage }}</span>
+        <el-button text type="primary" @click="loadHotProducts">重试</el-button>
+      </div>
+      <p v-else-if="!hotProducts.length" class="hot-products-message">
+        暂无热门商品
+      </p>
+      <div v-else class="hot-products-grid">
+        <article
+          v-for="item in hotProducts"
+          :key="item.id"
+          class="hot-product-card"
+          @click="router.push(`/products/${item.id}`)"
+        >
+          <div
+            class="hot-placeholder"
+            :class="placeholderClass(item.categoryName)"
+          >
+            {{ item.categoryName.slice(0, 2) }}
+          </div>
+          <div class="hot-product-body">
+            <span class="category-label">{{ item.categoryName }}</span>
+            <h3>{{ item.title }}</h3>
+            <strong>{{ formatPrice(item.price) }}</strong>
+            <p>{{ item.viewCount }} 浏览 · {{ item.sellerName }}</p>
+          </div>
+        </article>
+      </div>
+    </section>
     <div v-if="loading" class="product-grid">
       <el-skeleton v-for="i in 6" :key="i" animated
         ><template #template
@@ -220,3 +282,95 @@ onMounted(() => {
     /></template>
   </section>
 </template>
+
+<style scoped>
+.hot-products-section {
+  margin: 30px 0 34px;
+}
+.hot-products-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.hot-eyebrow {
+  margin: 0;
+  color: #b14f31;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+.hot-products-heading h2 {
+  margin: 4px 0 0;
+  font-size: 24px;
+}
+.hot-products-heading > span {
+  color: #657066;
+  font-size: 13px;
+}
+.hot-products-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.hot-product-card {
+  overflow: hidden;
+  border: 1px solid #d7d0c1;
+  background: #fffdf7;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.hot-product-card:hover {
+  box-shadow: 4px 5px 0 #d7d0c1;
+  transform: translate(-2px, -2px);
+}
+.hot-placeholder {
+  display: grid;
+  height: 96px;
+  place-items: center;
+  color: #365445;
+  font-size: 18px;
+  font-weight: 800;
+}
+.hot-product-body {
+  padding: 11px;
+}
+.hot-product-body h3 {
+  overflow: hidden;
+  margin: 7px 0;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hot-product-body strong {
+  color: #b14f31;
+}
+.hot-product-body p {
+  margin: 7px 0 0;
+  color: #657066;
+  font-size: 12px;
+}
+.hot-products-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 62px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px dashed #d7d0c1;
+  color: #657066;
+  font-size: 13px;
+}
+@media (max-width: 920px) {
+  .hot-products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .hot-products-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+</style>

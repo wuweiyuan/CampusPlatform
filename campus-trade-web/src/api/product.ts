@@ -25,6 +25,19 @@ export interface ProductCard {
   favorited: boolean;
 }
 
+export interface HotProduct {
+  id: number;
+  title: string;
+  price: number;
+  status: ProductStatus;
+  categoryId: number;
+  categoryName: string;
+  sellerId: number;
+  sellerName: string;
+  viewCount: number;
+  createdAt: string;
+}
+
 export interface ProductDetail extends ProductCard {
   description: string;
   updatedAt: string;
@@ -56,6 +69,10 @@ export function getProducts(params: ProductListQuery) {
   return http.get<ApiResponse<PageResponse<ProductCard>>>("/products", {
     params,
   });
+}
+
+export function getHotProducts() {
+  return http.get<ApiResponse<HotProduct[]>>("/products/hot");
 }
 
 export function getProduct(id: number) {

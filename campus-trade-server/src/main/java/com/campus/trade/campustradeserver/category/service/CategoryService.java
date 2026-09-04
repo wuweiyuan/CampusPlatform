@@ -7,24 +7,60 @@ import com.campus.trade.campustradeserver.category.dto.CategoryUpdateRequest;
 import com.campus.trade.campustradeserver.category.entity.Category;
 import com.campus.trade.campustradeserver.category.mapper.CategoryMapper;
 import com.campus.trade.campustradeserver.category.enums.CategoryStatus;
+import com.campus.trade.campustradeserver.category.vo.CategoryResponse;
+import com.campus.trade.campustradeserver.common.cache.CacheKeys;
 import com.campus.trade.campustradeserver.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryMapper categoryMapper;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final JsonMapper jsonMapper;
 
-    public List<Category> listEnabledCategories() {
-        return categoryMapper.selectList(Wrappers.<Category>lambdaQuery()
+    public List<CategoryResponse> listEnabledCategories() {
+
+        try{
+            String cachedJson = stringRedisTemplate.opsForValue().get(CacheKeys.CATEGORY_LIST);
+            if(cachedJson != null){
+                CategoryResponse[] categoryResponses = jsonMapper.readValue(
+                        cachedJson,
+                        CategoryResponse[].class
+                );
+                log.info("分类缓存命中");
+                return Arrays.asList(categoryResponses);
+            }
+            log.info("分类缓存未命中");
+        }catch (Exception exception){
+            log.warn("分类缓存读取失败，降级查询 MySQL",exception);
+        }
+
+        List<Category> categories = categoryMapper.selectList(Wrappers.<Category>lambdaQuery()
                 .eq(Category::getStatus, CategoryStatus.ENABLED.name())
                 .orderByAsc(Category::getSort)
                 .orderByAsc(Category::getId)
         );
+        List<CategoryResponse> responses = categories.stream().map(this::toCategoryResponse).toList();
+        try{
+            String json = jsonMapper.writeValueAsString(responses);
+            stringRedisTemplate.opsForValue().set(CacheKeys.CATEGORY_LIST,json, Duration.ofMinutes(30));
+            log.info("分类缓存已写入");
+        }catch (Exception exception){
+            log.warn("分类缓存写入失败，不影响公开分类读取",exception);
+        }
+
+        return responses;
     }
 
     public Category createCategory(CategoryCreateRequest request) {
@@ -40,6 +76,7 @@ public class CategoryService {
         category.setSort(request.getSort());
         category.setStatus(CategoryStatus.ENABLED.name());
         categoryMapper.insert(category);
+        evictCategoryListCache();
         return categoryMapper.selectById(category.getId());
     }
 
@@ -73,6 +110,7 @@ public class CategoryService {
         }
 
         categoryMapper.updateById(category);
+        evictCategoryListCache();
         return categoryMapper.selectById(id);
 
     }
@@ -85,7 +123,25 @@ public class CategoryService {
 
         category.setStatus(request.getStatus().name());
         categoryMapper.updateById(category);
+        evictCategoryListCache();
         return categoryMapper.selectById(id);
 
+    }
+
+    private void evictCategoryListCache(){
+        try{
+            stringRedisTemplate.delete(CacheKeys.CATEGORY_LIST);
+            log.info("分类缓存已删除");
+        }catch (Exception exception){
+            log.warn("分类缓存删除失败，不影响分类写操作", exception);
+        }
+    }
+
+    private CategoryResponse toCategoryResponse(Category category){
+        CategoryResponse response = new CategoryResponse();
+        response.setId(category.getId());
+        response.setName(category.getName());
+        response.setSort(category.getSort());
+        return response;
     }
 }

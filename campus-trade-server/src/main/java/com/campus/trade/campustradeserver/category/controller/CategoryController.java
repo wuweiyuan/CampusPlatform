@@ -20,15 +20,7 @@ public class CategoryController {
 
     @GetMapping
     public ApiResponse<List<CategoryResponse>> listEnabledCategories(){
-        List<CategoryResponse> responses = categoryService.listEnabledCategories()
-                .stream()
-                .map(category -> {
-                    CategoryResponse response = new CategoryResponse();
-                    response.setId(category.getId());
-                    response.setSort(category.getSort());
-                    response.setName(category.getName());
-                    return response;
-                }).toList();
+        List<CategoryResponse> responses = categoryService.listEnabledCategories();
         return ApiResponse.success(responses);
     }
 }

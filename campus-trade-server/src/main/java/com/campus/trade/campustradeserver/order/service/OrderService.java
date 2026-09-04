@@ -13,6 +13,7 @@ import com.campus.trade.campustradeserver.order.vo.OrderPageResponse;
 import com.campus.trade.campustradeserver.product.entity.Product;
 import com.campus.trade.campustradeserver.product.enums.ProductStatus;
 import com.campus.trade.campustradeserver.product.mapper.ProductMapper;
+import com.campus.trade.campustradeserver.product.service.HotProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.AccessDeniedException;
@@ -34,6 +35,7 @@ public class OrderService {
 
     private final OrderMapper orderMapper;
     private final ProductMapper productMapper;
+    private final HotProductService hotProductService;
 
     @Transactional
     public OrderDetailResponse createOrder(Long buyerId, Long productId){
@@ -60,6 +62,7 @@ public class OrderService {
         if(response == null){
             throw new BusinessException(400,"订单创建后查询失败");
         }
+        hotProductService.evictHotProductCacheAfterCommit();
         return response;
     }
 
@@ -91,6 +94,7 @@ public class OrderService {
         if (updatedProductRows != 1) {
             throw new BusinessException(4002, "订单关联商品状态异常，取消失败");
         }
+        hotProductService.evictHotProductCacheAfterCommit();
     }
 
 
@@ -117,7 +121,7 @@ public class OrderService {
         if(updatedProductRows != 1){
             throw new BusinessException(4002,"订单关联商品状态异常，付款失败");
         }
-
+        hotProductService.evictHotProductCacheAfterCommit();
     }
 
     @Transactional
