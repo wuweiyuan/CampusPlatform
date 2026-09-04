@@ -36,7 +36,8 @@ async function handleLogout() {
             ><span class="nav-section">管理后台</span>
             <RouterLink class="admin-link" to="/admin/categories">分类管理</RouterLink>
             <RouterLink class="admin-link" to="/admin/users">用户管理</RouterLink>
-            <RouterLink class="admin-link" to="/admin/products">商品管理</RouterLink></template
+            <RouterLink class="admin-link" to="/admin/products">商品管理</RouterLink>
+            <RouterLink class="admin-link" to="/admin/orders">订单管理</RouterLink></template
           ><RouterLink to="/profile">个人中心</RouterLink></template
         >
       </nav>
