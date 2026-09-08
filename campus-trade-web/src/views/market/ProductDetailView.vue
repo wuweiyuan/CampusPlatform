@@ -34,7 +34,7 @@ async function load() {
   try {
     product.value = (await getProduct(Number(route.params.id))).data.data;
   } catch (error) {
-    errorMessage.value = getErrorMessage(error, "商品不存在或已下架");
+    errorMessage.value = getErrorMessage(error, "商品信息加载失败，请重试");
   } finally {
     loading.value = false;
   }
@@ -95,7 +95,8 @@ onMounted(load);
       title="无法查看该商品"
       :sub-title="errorMessage"
       ><template #extra
-        ><el-button type="primary" @click="router.push('/')"
+        ><el-button type="primary" @click="load">重新加载</el-button>
+        <el-button @click="router.push('/')"
           >返回商品广场</el-button
         ></template
       ></el-result

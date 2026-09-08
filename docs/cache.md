@@ -18,7 +18,7 @@
 | `auth:email-code:cooldown:{email}` | 固定字符串 `"1"`，表示该邮箱仍在发送冷却中 | 60 秒 | `EmailCodeService.sendCode` 通过 `setIfAbsent` 写入 | 下一次 `sendCode` 通过 `setIfAbsent` 判断 | 仅自然过期 | 发送验证码失败，不能绕过限频。 |
 | `auth:token:blacklist:{jti}` | 固定字符串 `"1"`，表示该 JWT 已退出 | JWT 的剩余有效期；本地默认 JWT 生命周期为 7200 秒 | `TokenBlacklistService.addToBlacklist`，由退出登录调用 | `JwtAuthenticationFilter` 经 `TokenBlacklistService.isBlacklisted` 查询 | 仅自然过期；已过期 Token 不再需要黑名单记录 | 受保护认证失败，不能把已退出 Token 当作有效 Token。 |
 
-> 当前开发邮件模式会在后端日志输出验证码，便于本地学习；阶段 7 新增的缓存日志不得再输出验证码值。
+> 阶段 8 已移除验证码明文日志；当前仍未发送真实邮件，本地从 Redis 复制验证码验收。操作方式见 [日志与本地取码说明](logging.md)。
 
 ## 计划分类缓存
 

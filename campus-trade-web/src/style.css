@@ -40,26 +40,26 @@ a {
   font-weight: 800;
   letter-spacing: 0.16em;
 }
-.sidebar nav {
+.app-navigation {
   display: grid;
   gap: 7px;
 }
-.sidebar nav a {
+.app-navigation a {
   padding: 11px 12px;
   text-decoration: none;
 }
-.sidebar nav a.router-link-active {
+.app-navigation a.router-link-active {
   background: #f5f2e8;
   color: #164b3a;
 }
-.sidebar .nav-section {
+.app-navigation .nav-section {
   margin: 12px 12px 0;
   color: #bdd0bd;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
-.sidebar nav a.admin-link {
+.app-navigation a.admin-link {
   margin-left: 10px;
   padding-block: 9px;
   font-size: 14px;
@@ -396,5 +396,41 @@ header p:not(.eyebrow) {
   .favorite-list .el-button {
     grid-column: 2;
     justify-self: start;
+  }
+}
+
+.topbar .mobile-menu-button {
+  display: none;
+}
+.mobile-navigation-drawer {
+  background: #164b3a;
+  color: #f5f2e8;
+}
+.mobile-navigation-drawer .el-drawer__header {
+  color: #f5f2e8;
+  margin-bottom: 16px;
+}
+.mobile-navigation-drawer .el-drawer__close-btn {
+  color: #f5f2e8;
+}
+.app-navigation a:focus-visible {
+  outline: 2px solid #f2643d;
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  .topbar .mobile-menu-button {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: #164b3a;
+    min-height: 44px;
+  }
+  .topbar > div {
+    min-width: 0;
+    gap: 6px;
+  }
+  .topbar > div > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

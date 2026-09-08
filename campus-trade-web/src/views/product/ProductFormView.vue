@@ -17,6 +17,7 @@ const formRef = ref<FormInstance>();
 const categories = ref<Category[]>([]);
 const submitting = ref(false);
 const loading = ref(false);
+const loadError = ref("");
 const editing = computed(() => route.name === "product-edit");
 const imagePreview = ref<string | null>(null);
 const form = reactive({
@@ -72,6 +73,7 @@ function removeImage() {
 }
 async function load() {
   loading.value = true;
+  loadError.value = "";
   try {
     categories.value = (await getCategories()).data.data;
     if (editing.value) {
@@ -86,13 +88,13 @@ async function load() {
       imagePreview.value = data.imageBase64;
     }
   } catch (error) {
-    ElMessage.error(getErrorMessage(error, "商品信息加载失败"));
-    if (editing.value) router.replace("/my-products");
+    loadError.value = getErrorMessage(error, "商品信息加载失败，请重试");
   } finally {
     loading.value = false;
   }
 }
 async function submit() {
+  if (submitting.value || loading.value || loadError.value || !categories.value.length) return;
   if (
     !formRef.value ||
     !(await formRef.value.validate().catch(() => false)) ||
@@ -130,7 +132,14 @@ onMounted(load);
       <h1>{{ editing ? "编辑你的商品" : "发布一件闲置" }}</h1>
       <p>写清楚一点，下一位需要它的同学就更容易找到它。</p>
     </header>
-    <el-skeleton v-if="loading" animated :rows="8" /><el-form
+    <el-skeleton v-if="loading" animated :rows="8" />
+    <el-result v-else-if="loadError" icon="error" title="暂时无法加载表单" :sub-title="loadError">
+      <template #extra><el-button type="primary" @click="load">重新加载</el-button></template>
+    </el-result>
+    <el-empty v-else-if="!categories.length" description="暂无可用分类，请稍后再试">
+      <el-button @click="load">重新加载</el-button>
+    </el-empty>
+    <el-form
       v-else
       ref="formRef"
       class="product-form"

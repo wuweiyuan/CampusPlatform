@@ -30,8 +30,8 @@ public class EmailCodeService {
         String code = String.format("%06d", ThreadLocalRandom.current().nextInt(1_000_000));
 
         stringRedisTemplate.opsForValue().set(CODE_KEY_PREFIX + email,code,Duration.ofMinutes(5));
-        // 当前 MAIL_MODE=log：暂时不发送真实邮件，直接从后端日志取得验证码。
-        log.info("发送邮箱验证码：email={}, code={}", email, code);
+        // Local development: read the code from Redis; never include it in logs.
+        log.info("邮箱验证码已生成并缓存");
     }
 
     public boolean verifyCode(String email, String code){
