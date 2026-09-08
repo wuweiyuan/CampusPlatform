@@ -1,6 +1,16 @@
-
-
 spring:
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: 542290397@qq.com
+    protocol: smtp
+    default-encoding: UTF-8
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.ssl.enable]": true
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 5000
+      "[mail.smtp.writetimeout]": 5000
   config:
     import: optional:classpath:application-local.yml
   application:
@@ -22,5 +32,9 @@ logging:
     level: "%5p [requestId=%X{requestId:-none}]"
 
 app:
+  mail:
+    from: 542290397@qq.com
   jwt:
     expire-seconds: ${JWT_EXPIRE_SECONDS:7200}
+
+
