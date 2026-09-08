@@ -10,6 +10,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.dao.QueryTimeoutException;
+import org.springframework.data.redis.RedisSystemException;
+import org.springframework.http.MediaType;
+import com.campus.trade.campustradeserver.common.api.ApiResponse;
+import tools.jackson.databind.json.JsonMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,12 +29,14 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
     private final SysUserMapper sysUserMapper;
+    private final JsonMapper jsonMapper;
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -91,6 +100,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
+        } catch (RedisConnectionFailureException | QueryTimeoutException | RedisSystemException exception) {
+            SecurityContextHolder.clearContext();
+            log.warn("认证 Redis 不可用，拒绝本次请求：{}", exception.getClass().getSimpleName());
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding("UTF-8");
+            jsonMapper.writeValue(response.getOutputStream(),
+                    new ApiResponse<Void>(503, "认证服务暂时不可用，请稍后重试", null));
+            return;
         } catch (JwtException | IllegalArgumentException exception) {
             SecurityContextHolder.clearContext();
         }

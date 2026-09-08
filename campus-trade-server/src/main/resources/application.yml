@@ -10,6 +10,8 @@ spring:
     redis:
       host: localhost
       port: 6379
+      connect-timeout: 1s
+      timeout: 1s
 #  jackson:
 #    default-property-inclusion: non_null
 server:
@@ -18,4 +20,3 @@ server:
 app:
   jwt:
     expire-seconds: ${JWT_EXPIRE_SECONDS:7200}
-

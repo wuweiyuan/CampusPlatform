@@ -8,9 +8,23 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.data.redis.RedisSystemException;
+import org.springframework.dao.QueryTimeoutException;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler({RedisConnectionFailureException.class, RedisSystemException.class,
+            QueryTimeoutException.class})
+    public ResponseEntity<ApiResponse<Void>> handleServiceUnavailable(Exception exception) {
+        log.warn("依赖服务不可用：{}", exception.getClass().getSimpleName());
+        return ResponseEntity.status(503).body(
+                new ApiResponse<>(503, "服务暂时不可用，请稍后重试", null)
+        );
+    }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException exception){

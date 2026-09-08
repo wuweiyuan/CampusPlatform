@@ -1,5 +1,7 @@
 # 阶段 3：分类与商品接口文档
 
+> 2026-09-08 补充：HTTP 状态、业务错误码及 Redis 故障 503 以 [统一错误码表](error-codes.md) 的当前实现说明为准；全部接口入口见 [API 索引](README.md)。
+
 > 基础地址：`http://localhost:8080`
 >
 > 所有接口均以 `/api` 开头。除特别说明外，日期时间使用 ISO 8601 字符串，例如 `2026-08-20T14:30:00`。
@@ -266,6 +268,8 @@ data:image/png;base64,iVBORw0KGgo...
 `status` 只能为 `ENABLED` 或 `DISABLED`。分类不存在时返回 `2002`。停用分类不会修改既有商品的 `categoryId`，但之后不能用该分类发布或编辑商品。成功响应的 `data` 为修改后的完整 `CategoryResponse`。
 
 ## 六、公共商品接口
+
+热门商品 `GET /api/products/hot` 的请求、响应与缓存故障说明见 [阶段 7](phase-7.md)。
 
 ### 1. 商品分页列表（商品广场）
 

@@ -1,0 +1,1826 @@
+{
+  "info": {
+    "name": "校园二手交易平台 · 阶段8手动验收",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "34 个接口的手动请求模板及异常场景。请先阅读同目录 README.md，逐条 Send；不按整个集合顺序运行。无自动脚本，不自动保存 Token 或 ID；在本地环境填写空变量。真实凭据不得保存到导出文件。"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "page",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "pageSize",
+      "value": "12",
+      "type": "string"
+    },
+    {
+      "key": "sellerUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sellerPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sellerEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sellerEmailCode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerEmailCode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sellerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "thirdToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "disabledCategoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cancelProductId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cancelOrderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "targetUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "missingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryName",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "imageBase64",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 认证",
+      "item": [
+        {
+          "name": "A01 POST /api/auth/email-code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/email-code",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "前置及预期：匿名；JSON `email`；成功发送；非法邮箱、60 秒内重复发送失败；Redis 故障 503。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{sellerEmail}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "A02 POST /api/auth/register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "前置及预期：匿名；`username,password,email,emailCode`；注册 USER；错误/过期/已用验证码、重复用户名/邮箱、长度不合法失败；不能注册 ADMIN。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{sellerUsername}}\",\n  \"password\": \"{{sellerPassword}}\",\n  \"email\": \"{{sellerEmail}}\",\n  \"emailCode\": \"{{sellerEmailCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "A03 POST /api/auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "前置及预期：匿名；`username,password`；返回 Token；密码错误、禁用用户失败；不输出密码哈希。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{sellerUsername}}\",\n  \"password\": \"{{sellerPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "A04 GET /api/auth/me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：有效 Token；返回当前用户；无效/过期/退出/禁用用户 Token 为 401；Redis 故障 503。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "A05 POST /api/auth/logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/logout",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：有效 Token；无业务请求体；写入黑名单，原 Token 随后 401；写入失败 503，不误报成功。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 健康检查",
+      "item": [
+        {
+          "name": "H01 GET /api/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/health",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：**当前后端要求登录**；返回 `data.status=UP`；匿名按当前配置 401，不代表 MySQL/Redis 全部健康。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 分类",
+      "item": [
+        {
+          "name": "C01 GET /api/categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/categories",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "前置及预期：匿名；无参数；仅启用分类，按排序规则返回；缓存命中/回填及匿名降级。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "C02 GET /api/admin/categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/categories",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；含启用和停用分类。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "C03 POST /api/admin/categories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/categories",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；`name,sort`；创建分类并失效缓存；空/超长/重名失败。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{categoryName}}\",\n  \"sort\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "C04 PATCH /api/admin/categories/{{categoryId}}",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/categories/{{categoryId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；`name,sort` 可选；更新指定分类并失效缓存；不存在 ID、非法名称失败；空更新行为需记录。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sort\": 101\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "C05 PATCH /api/admin/categories/{{categoryId}}/status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/categories/{{categoryId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；`status`，启用 1/停用 0；更新并失效缓存；停用后不能用于发布/编辑；非法状态、不存在 ID 失败。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 商品",
+      "item": [
+        {
+          "name": "P01 GET /api/products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/products?page={{page}}&pageSize={{pageSize}}",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "前置及预期：匿名；`page,pageSize,categoryId,keyword`；仅在售商品、分页筛选正确；登录时收藏标记属于当前用户。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "P02 GET /api/products/{{productId}}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/{{productId}}",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "前置及预期：匿名；在售商品 ID；返回详情、增加浏览量并失效热门缓存；非法/不存在/非在售 ID 失败。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "P03 GET /api/products/hot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/hot",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "前置及预期：匿名；无参数；最多 10 条 ON_SALE，浏览量降序、创建时间降序；不含 favorited/完整图片；TTL 10 分钟。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "P04 POST /api/products",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/products",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：A；`categoryId,title,description,price,imageBase64`；创建 ON_SALE；校验启用分类、标题/描述长度、正价格及图片合法性；失效热门缓存。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": {{categoryId}},\n  \"title\": \"阶段八验收教材\",\n  \"description\": \"这是阶段八手动验收使用的独立测试商品。\",\n  \"price\": 25.5,\n  \"imageBase64\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "P05 GET /api/products/mine",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/mine?page={{page}}&pageSize={{pageSize}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：A；`page,pageSize,keyword,status`；仅自己的发布，包含允许查询的各状态；B 无法看到 A 的发布集合。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "P06 PUT /api/products/{{productId}}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/products/{{productId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：A；自己的在售商品；字段同发布；更新且失效热门缓存；B 编辑拒绝；非在售商品拒绝。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": {{categoryId}},\n  \"title\": \"阶段八验收教材\",\n  \"description\": \"这是阶段八手动验收使用的独立测试商品。\",\n  \"price\": 25.5,\n  \"imageBase64\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "P07 POST /api/products/{{productId}}/off-shelf",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/{{productId}}/off-shelf",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：A；自己的在售商品；变为 OFF_SHELF，从公开列表移除并失效热门缓存；B 或错误状态拒绝。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 收藏",
+      "item": [
+        {
+          "name": "F01 POST /api/products/{{productId}}/favorite",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/{{productId}}/favorite",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：B；在售商品；收藏一次；重复/并发重复收藏幂等成功，数据库只有一条关系；不存在/非在售失败。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "F02 DELETE /api/products/{{productId}}/favorite",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/{{productId}}/favorite",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：B；合法商品 ID；仅删除 B 的关系；重复取消幂等，不影响其他用户。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "F03 GET /api/favorites",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/favorites?page={{page}}&pageSize={{pageSize}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：B；`page,pageSize`；只返回 B 的收藏，分页与商品当前状态正确。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 订单",
+      "item": [
+        {
+          "name": "O01 POST /api/orders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：B；`productId` 指向 A 的在售商品；订单 PENDING_PAYMENT、商品 LOCKED 同时成立；自购/重复抢购/不可交易拒绝。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": {{productId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "O02 GET /api/orders/{{orderId}}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：A 或 B；关联订单；买卖双方可读，C 拒绝；不存在/非法 ID 失败。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "O03 GET /api/orders/buying",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/buying?page={{page}}&pageSize={{pageSize}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：B；`page,pageSize`；仅 B 买入订单。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "O04 GET /api/orders/selling",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/selling?page={{page}}&pageSize={{pageSize}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：A；`page,pageSize`；仅 A 卖出订单。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "O05 POST /api/orders/{{orderId}}/cancel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/cancel",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：B；待付款订单；订单 CANCELLED、商品 ON_SALE 同时成立；非买家/重复取消/错误状态拒绝。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "O06 POST /api/orders/{{orderId}}/pay",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/pay",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：B；待付款订单；订单 PAID、商品 SOLD 同时成立；非买家/重复付款/已取消拒绝。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "O07 POST /api/orders/{{orderId}}/complete",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/complete",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：B；已付款订单；订单 COMPLETED，商品保持 SOLD；非买家/未付款/重复完成拒绝。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 管理员",
+      "item": [
+        {
+          "name": "M01 GET /api/admin/users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/users?page={{page}}&pageSize={{pageSize}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；`page,pageSize,username,email,role,status`；分页筛选，不返回密码哈希；非法枚举/分页失败。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "M02 PATCH /api/admin/users/{{targetUserId}}/status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/users/{{targetUserId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；`status`，启用 1/禁用 0；禁用后旧 Token 401；禁止禁用自己；重新启用后旧 Token 行为见差异 D-04。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "M03 GET /api/admin/products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/products?page={{page}}&pageSize={{pageSize}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；`page,pageSize,sellerId,categoryId,status,keyword`；跨卖家查询、状态筛选和分页正确。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "M04 PATCH /api/admin/products/{{productId}}/off-shelf",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/products/{{productId}}/off-shelf",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；ON_SALE 商品；下架且失效热门缓存；LOCKED 等状态拒绝；注意区别卖家接口的 POST。正常预期 HTTP 200/code=0。会改变数据；仅操作专用验收数据。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "M05 GET /api/admin/orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/orders?page={{page}}&pageSize={{pageSize}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；`page,pageSize,orderNo,status,buyerId,sellerId`；只读筛选，不能代用户付款、取消、完成。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "M06 GET /api/admin/ping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/ping",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "前置及预期：M；管理员访问成功，匿名 401、普通用户 403。正常预期 HTTP 200/code=0。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "08 流程辅助（按 README 顺序手动选择）",
+      "item": [
+        {
+          "name": "买家登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "HTTP 200/code=0；手动将 data.token 填入本地 buyerToken。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{buyerUsername}}\",\n  \"password\": \"{{buyerPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "管理员登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "HTTP 200/code=0；手动将 data.token 填入本地 adminToken。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "买家发送验证码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/email-code",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "先填写可用的本地测试邮箱；成功后在本地取得验证码。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{buyerEmail}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "买家注册",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "HTTP 200/code=0；后续单独登录。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{buyerUsername}}\",\n  \"password\": \"{{buyerPassword}}\",\n  \"email\": \"{{buyerEmail}}\",\n  \"emailCode\": \"{{buyerEmailCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "恢复测试分类启用",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/categories/{{categoryId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "HTTP 200/code=0；分类恢复公开。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "恢复测试用户启用",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/users/{{targetUserId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "HTTP 200/code=0；旧 Token 行为按 D-04 记录，不预设已撤销。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "发布取消分支专用商品",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/products",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "保存 data.id 到 cancelProductId，不覆盖成交分支 productId。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": {{categoryId}},\n  \"title\": \"阶段八取消分支商品\",\n  \"description\": \"这是阶段八手动验收使用的独立测试商品。\",\n  \"price\": 25.5,\n  \"imageBase64\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "取消分支下单",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "HTTP 200；保存 data.id 到 cancelOrderId；订单待付款，商品 LOCKED。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": {{cancelProductId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "取消分支取消",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{cancelOrderId}}/cancel",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "HTTP 200；订单 CANCELLED，商品 ON_SALE。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "取消分支查订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{cancelOrderId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "检查取消分支订单状态。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "卖家查看成交订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "卖家可查看，HTTP 200。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "09 异常与权限（独立场景，先读前置条件）",
+      "item": [
+        {
+          "name": "未登录查询个人信息",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/me",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "预期 401/code=401。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "健康检查匿名",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/health",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "预期 当前配置 401/code=401。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "普通用户访问管理员",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/users",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 403/code=403。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "非法分页",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/products?page=0&pageSize=51",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "预期 400/code=400；其他分页接口同样替换参数逐项验证。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "不存在商品",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/{{missingId}}",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "预期 400/code=3001；missingId 先确认数据库不存在。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "不存在订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{missingId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=4001。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "非法JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/products",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=400。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "空发布请求",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/products",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=400。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "非法商品图片",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/products",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=3004；其余字段须合法。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": {{categoryId}},\n  \"title\": \"阶段八验收教材\",\n  \"description\": \"这是阶段八手动验收使用的独立测试商品。\",\n  \"price\": 25.5,\n  \"imageBase64\": \"not-valid-base64\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "停用分类发布",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/products",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=2002；先准备停用的专用分类。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": {{disabledCategoryId}},\n  \"title\": \"阶段八验收教材\",\n  \"description\": \"这是阶段八手动验收使用的独立测试商品。\",\n  \"price\": 25.5,\n  \"imageBase64\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "买家越权编辑",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/products/{{productId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 403/code=403；商品为卖家自己的在售商品。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": {{categoryId}},\n  \"title\": \"阶段八验收教材\",\n  \"description\": \"这是阶段八手动验收使用的独立测试商品。\",\n  \"price\": 25.5,\n  \"imageBase64\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "自己购买商品",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=4003；在售商品属于卖家。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": {{productId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "无关第三方查订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{thirdToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 403/code=403；thirdToken 来自既非买家也非卖家的用户。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "卖家越权付款",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/pay",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 403/code=403。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "未付款确认完成",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/complete",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=4002；订单仍为 PENDING_PAYMENT。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "已取消订单付款",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{cancelOrderId}}/pay",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=4002；先执行取消分支。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "重复取消",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{cancelOrderId}}/cancel",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=4002；取消不是幂等成功。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "重复付款",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/pay",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=4002；先成功付款。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "重复收藏",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/{{productId}}/favorite",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 200/code=0；商品仍在售，已收藏；检查只有一条关系。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "重复取消收藏",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/products/{{productId}}/favorite",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 200/code=0；已取消，不影响他人关系。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "禁用用户原Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{buyerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 401/code=401；先将 targetUserId 指向专用买家并禁用。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "已退出Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sellerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 401/code=401；执行 A05 后保留旧 sellerToken。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。"
+          },
+          "response": []
+        },
+        {
+          "name": "错误验证码注册",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "预期 400/code=1001；先确保本地没有该邮箱的有效验证码。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{buyerUsername}}\",\n  \"password\": \"{{buyerPassword}}\",\n  \"email\": \"{{buyerEmail}}\",\n  \"emailCode\": \"000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "重复分类名",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/categories",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "预期 400/code=2001；先成功创建同名分类。\n手动记录 HTTP、code、message 与业务状态；实际结果待执行。",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{categoryName}}\",\n  \"sort\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
