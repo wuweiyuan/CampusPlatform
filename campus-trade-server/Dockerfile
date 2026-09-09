@@ -19,6 +19,11 @@ FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
+# 安装健康检查使用的 HTTP 请求工具
+RUN apt-get update \
+&& apt-get install -y --no-install-recommends curl \
+&& rm -rf /var/lib/apt/lists/*
+
 # 创建普通用户，避免以 root 运行应用
 RUN groupadd --system app \
     && useradd --system --gid app --no-create-home app

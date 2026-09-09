@@ -2,7 +2,7 @@ package com.campus.trade.campustradeserver.auth.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-
+import com.campus.trade.campustradeserver.user.enums.UserRole;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AuthResponseDtoTests {
@@ -15,7 +15,7 @@ class AuthResponseDtoTests {
         user.setId(1L);
         user.setUsername("zhangsan");
         user.setEmail("student@example.com");
-        user.setRole("USER");
+        user.setRole(UserRole.USER);
 
         String json = objectMapper.writeValueAsString(user);
 

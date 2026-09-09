@@ -4,8 +4,22 @@
 
 先在 Mac 本机使用 Docker Compose 验证，再部署到 Linux 服务器。
 
-目前已运行 `hello-world`，确认本机 Docker 可以下载镜像并运行容器。
-本项目的 Dockerfile、Nginx 配置和 Compose 编排尚未完成，暂不能启动完整服务。
+截至 2026-09-09，已完成本机四服务镜像构建和启动，MySQL、Redis、后端健康检查通过，Nginx 代理 `/api/health` 返回 HTTP 200。
+今日已停止四个服务，保留容器和数据卷。Linux 部署、数据重建持久化及完整业务验收仍待完成。
+详细进度以 [2026-09-09 交接记录](../docs/学习清单/阶段-9-今日交接记录-2026-09-09.md) 为准；下方原始待办尚未逐项同步。
+
+在项目根目录停止服务：
+
+```bash
+docker compose --env-file deploy/.env -f deploy/docker-compose.yml stop
+```
+
+下次启动（Docker 引擎须运行）：
+
+```bash
+docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
+docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
+```
 
 ## 服务组成
 
