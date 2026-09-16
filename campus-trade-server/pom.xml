@@ -135,6 +135,13 @@
             <version>3.5.14</version>
         </dependency>
 
+        <!-- 自动生成 OpenAPI 接口文档，并提供 Swagger UI 页面 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.1.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

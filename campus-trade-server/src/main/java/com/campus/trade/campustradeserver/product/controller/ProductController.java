@@ -1,5 +1,10 @@
 package com.campus.trade.campustradeserver.product.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springdoc.core.annotations.ParameterObject;
 import com.campus.trade.campustradeserver.auth.security.AuthenticatedUser;
 import com.campus.trade.campustradeserver.category.entity.Category;
 import com.campus.trade.campustradeserver.category.mapper.CategoryMapper;
@@ -26,16 +31,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequestMapping("/api/products")
+@Tag(name = "商品管理")
 @RestController
 @RequiredArgsConstructor
 public class ProductController {
     private final CategoryMapper categoryMapper;
     private final ProductService productService;
     private final HotProductService hotProductService;
+    @Operation(summary = "发布商品", description = "需要登录；只能发布到启用分类，卖家取当前用户，初始状态为 ON_SALE。", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping
     public ApiResponse<ProductDetailResponse> createProduct(
             @Valid @RequestBody CreateProductRequest request,
-            @AuthenticationPrincipal AuthenticatedUser currentUser
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser currentUser
     ){
 
         Product product =  productService.createProduct(currentUser.id(), request);
@@ -43,39 +50,44 @@ public class ProductController {
         return ApiResponse.success(toProductDetailResponse(product, category.getName(), currentUser.username()));
     }
 
+    @Operation(summary = "分页查询在售商品", description = "允许匿名访问，支持分类和关键词筛选；携带有效 Token 时返回当前用户的收藏标记。")
     @GetMapping
-    public ApiResponse<PageResponse<ProductPageResponse>> listOnSaleProducts(@Valid ProductQuery query,@AuthenticationPrincipal AuthenticatedUser currentUser){
+    public ApiResponse<PageResponse<ProductPageResponse>> listOnSaleProducts(@ParameterObject @Valid ProductQuery query,@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser currentUser){
         Long currentUserId = currentUser == null ? null : currentUser.id();
         PageResponse<ProductPageResponse> pageResponse = productService.listOnSaleProducts(query, currentUserId);
         return ApiResponse.success(pageResponse);
     }
 
+    @Operation(summary = "查看在售商品详情", description = "允许匿名访问；仅返回可公开访问的在售商品，成功访问会增加浏览量。")
     @GetMapping("/{id}")
-    public ApiResponse<ProductDetailResponse> getOnSaleProductDetail(@PathVariable Long id,@AuthenticationPrincipal AuthenticatedUser currentUser){
+    public ApiResponse<ProductDetailResponse> getOnSaleProductDetail(@Parameter(description = "商品 ID，正整数", example = "1", required = true) @PathVariable Long id,@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser currentUser){
         validateProductId(id);
         Long currentUserId = currentUser == null ? null : currentUser.id();
         ProductDetailResponse response =  productService.getOnSaleProductDetail(id, currentUserId);
         return ApiResponse.success(response);
     }
 
+    @Operation(summary = "查询热门商品", description = "允许匿名访问；返回热门在售商品列表，优先读取 Redis 缓存。")
     @GetMapping("/hot")
     public ApiResponse<List<HotProductResponse>> listHotProducts(){
         return ApiResponse.success(hotProductService.listHotProducts());
     }
 
+    @Operation(summary = "分页查询我的发布", description = "需要登录；只查询当前用户发布的商品，可按关键词和状态筛选。", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/mine")
     public ApiResponse<PageResponse<ProductPageResponse>> listMyProducts(
-            @Valid MyProductQuery query,
-            @AuthenticationPrincipal AuthenticatedUser currentUser
+            @ParameterObject @Valid MyProductQuery query,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser currentUser
             ){
         PageResponse<ProductPageResponse> response = productService.listMyProducts(currentUser.id(), query, currentUser.id());
         return ApiResponse.success(response);
     }
+    @Operation(summary = "修改我的在售商品", description = "需要登录且为商品卖家；仅允许修改 ON_SALE 商品，分类、标题、描述和价格均需提供。", security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/{id}")
     public ApiResponse<ProductDetailResponse> updateProduct(
-            @PathVariable Long id,
+            @Parameter(description = "商品 ID，正整数", example = "1", required = true) @PathVariable Long id,
             @Valid @RequestBody UpdateProductRequest request,
-            @AuthenticationPrincipal AuthenticatedUser currentUser
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser currentUser
             ){
         validateProductId(id);
         Product product = productService.updateProduct(id,currentUser.id(),request);
@@ -84,10 +96,11 @@ public class ProductController {
         return ApiResponse.success(toProductDetailResponse(product,category.getName(), currentUser.username()));
     }
 
+    @Operation(summary = "下架我的商品", description = "需要登录且为商品卖家；仅允许将 ON_SALE 商品改为 OFF_SHELF。", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{id}/off-shelf")
     public ApiResponse<Void> offShelfProduct(
-            @PathVariable long id,
-            @AuthenticationPrincipal AuthenticatedUser currentUser
+            @Parameter(description = "商品 ID，正整数", example = "1", required = true) @PathVariable long id,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser currentUser
     ){
         validateProductId(id);
         productService.offShelfProduct(id, currentUser.id());

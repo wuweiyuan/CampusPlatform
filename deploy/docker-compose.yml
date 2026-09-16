@@ -8,6 +8,7 @@ services:
       MYSQL_USER: ${MYSQL_USER:?请配置 MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?请配置 MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请配置 MYSQL_ROOT_PASSWORD}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:?请配置 SMTP 授权码}
 
     volumes:
       - mysql_data:/var/lib/mysql
@@ -51,8 +52,7 @@ services:
     restart: unless-stopped
 
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/${MYSQL_DATABASE:?请配置
-      MYSQL_DATABASE}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&sslMode=DISABLED"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/${MYSQL_DATABASE:?请配置MYSQL_DATABASE}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&sslMode=DISABLED"
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:?请配置 MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?请配置 MYSQL_PASSWORD}
 
