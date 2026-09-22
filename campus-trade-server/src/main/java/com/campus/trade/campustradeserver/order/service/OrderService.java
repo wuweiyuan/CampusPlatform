@@ -8,6 +8,7 @@ import com.campus.trade.campustradeserver.order.dto.OrderQuery;
 import com.campus.trade.campustradeserver.order.entity.Order;
 import com.campus.trade.campustradeserver.order.enums.OrderStatus;
 import com.campus.trade.campustradeserver.order.mapper.OrderMapper;
+import com.campus.trade.campustradeserver.order.message.OrderTimeoutMessageProducer;
 import com.campus.trade.campustradeserver.order.vo.OrderDetailResponse;
 import com.campus.trade.campustradeserver.order.vo.OrderPageResponse;
 import com.campus.trade.campustradeserver.product.entity.Product;
@@ -36,6 +37,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final ProductMapper productMapper;
     private final HotProductService hotProductService;
+    private final OrderTimeoutMessageProducer orderTimeoutMessageProducer;
 
     @Transactional
     public OrderDetailResponse createOrder(Long buyerId, Long productId){
@@ -62,6 +64,7 @@ public class OrderService {
         if(response == null){
             throw new BusinessException(400,"订单创建后查询失败");
         }
+        orderTimeoutMessageProducer.send(order.getId());
         hotProductService.evictHotProductCacheAfterCommit();
         return response;
     }
@@ -157,6 +160,35 @@ public class OrderService {
             throw new BusinessException(4001, "订单详情不存在");
         }
         return response;
+    }
+
+    @Transactional
+    public void cancelExpiredOrder(Long orderId){
+        Order order = orderMapper.selectById(orderId);
+
+        if (order == null){
+            return;
+        }
+
+        if (order.getStatus() != OrderStatus.PENDING_PAYMENT){
+            return;
+        }
+        int updatedOrderRows = orderMapper.updateStatusIfCurrentStatus(orderId,OrderStatus.PENDING_PAYMENT.getCode(), OrderStatus.CANCELLED.getCode());
+        if (updatedOrderRows == 0){
+            return;
+        }
+        int updatedProductRows = productMapper.updateStatusIfCurrentStatus(
+                order.getProductId(),
+                ProductStatus.LOCKED.name(),
+                ProductStatus.ON_SALE.name()
+        );
+        if (updatedProductRows != 1){
+            throw new BusinessException(
+                    4002,
+                    "订单关联商品状态异常，自动取消失败"
+            );
+        }
+        hotProductService.evictHotProductCacheAfterCommit();
     }
 
     public PageResponse<OrderPageResponse> listBuyingOrders(

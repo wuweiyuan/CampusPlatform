@@ -1,4 +1,17 @@
 spring:
+  rabbitmq:
+    publisher-confirm-type: simple
+    listener:
+      simple:
+        acknowledge-mode: auto
+        default-requeue-rejected: false
+
+        retry:
+          enabled: true
+          max-retries: 3
+          initial-interval: 1s
+          multiplier: 2
+          max-interval: 5s
   mail:
     host: smtp.qq.com
     port: 465
@@ -37,4 +50,6 @@ app:
   jwt:
     expire-seconds: ${JWT_EXPIRE_SECONDS:7200}
 
+  order:
+    payment-timeout: 30s
 
