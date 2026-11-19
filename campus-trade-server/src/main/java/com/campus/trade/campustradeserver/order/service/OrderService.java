@@ -8,7 +8,7 @@ import com.campus.trade.campustradeserver.order.dto.OrderQuery;
 import com.campus.trade.campustradeserver.order.entity.Order;
 import com.campus.trade.campustradeserver.order.enums.OrderStatus;
 import com.campus.trade.campustradeserver.order.mapper.OrderMapper;
-import com.campus.trade.campustradeserver.order.message.OrderTimeoutMessageProducer;
+import com.campus.trade.campustradeserver.order.mapper.OrderTimeoutOutboxMapper;
 import com.campus.trade.campustradeserver.order.vo.OrderDetailResponse;
 import com.campus.trade.campustradeserver.order.vo.OrderPageResponse;
 import com.campus.trade.campustradeserver.product.entity.Product;
@@ -16,12 +16,14 @@ import com.campus.trade.campustradeserver.product.enums.ProductStatus;
 import com.campus.trade.campustradeserver.product.mapper.ProductMapper;
 import com.campus.trade.campustradeserver.product.service.HotProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
@@ -37,7 +39,10 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final ProductMapper productMapper;
     private final HotProductService hotProductService;
-    private final OrderTimeoutMessageProducer orderTimeoutMessageProducer;
+
+    private final OrderTimeoutOutboxMapper orderTimeoutOutboxMapper;
+    @Value("${app.order.payment-timeout}")
+    private Duration paymentTimeout;
 
     @Transactional
     public OrderDetailResponse createOrder(Long buyerId, Long productId){
@@ -60,11 +65,14 @@ public class OrderService {
         order.setProductId(lockedProduct.getId());
         order.setSellerId(lockedProduct.getSellerId());
         insertOrderWithRetry(order);
+        int outboxRows = orderTimeoutOutboxMapper.insertPending(order.getId(),paymentTimeout.toSeconds());
+        if(outboxRows != 1){
+            throw new BusinessException(400,"保存订单超时消息失败");
+        }
         OrderDetailResponse response = orderMapper.selectOrderDetailById(order.getId());
         if(response == null){
             throw new BusinessException(400,"订单创建后查询失败");
         }
-        orderTimeoutMessageProducer.send(order.getId());
         hotProductService.evictHotProductCacheAfterCommit();
         return response;
     }

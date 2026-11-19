@@ -25,4 +25,17 @@ public class OrderTimeoutMessageProducer {
         );
 
     }
+
+    public void sendTimeout(Long orderId){
+        OrderTimeoutMessage message = new OrderTimeoutMessage(orderId);
+        rabbitTemplate.invoke(operations -> {
+            operations.convertAndSend(
+                    RabbitMqConfig.ORDER_TIMEOUT_EXCHANGE,
+                    RabbitMqConfig.ORDER_TIMEOUT_ROUTING_KEY,
+                    message
+            );
+            operations.waitForConfirmsOrDie(CONFIRM_TIMEOUT_MILLIS);
+            return null;
+        });
+    }
 }
